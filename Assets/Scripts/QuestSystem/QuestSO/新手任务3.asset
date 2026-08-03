@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b30c80cb62ee2524db30a1a8b7c3b453, type: 3}
+  m_Name: "\u65B0\u624B\u4EFB\u52A13"
+  m_EditorClassIdentifier: 
+  QuestName: "\u65B0\u624B\u4EFB\u52A13\uFF1A\u79FB\u52A8"
+  QuestDescription: "\u8FDB\u884C\u4E00\u4E9B\u6E38\u620F\u64CD\u4F5C\u65B9\u9762\u7684\u719F\u6089"
+  QuestLevel: 1
+  objectives:
+  - description: "\u62DC\u8BBF\u4E00\u5EA7\u5C0F\u6865"
+    targetItem: {fileID: 0}
+    targetActor: {fileID: 0}
+    targetLocation: {fileID: 0}
+    RequiredAmount: 1
+    CurrentAmount: 0
+  rewards:
+  - ItemSO: {fileID: 11400000, guid: f0c9b1c7b1725a84a9085e522d05459b, type: 2}
+    amount: 3
+  - ItemSO: {fileID: 11400000, guid: e2d4360f9c74ebb49a09d6675ee74b7a, type: 2}
+    amount: 3

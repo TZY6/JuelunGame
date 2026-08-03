@@ -1,0 +1,76 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+[DisallowMultipleComponent]
+public class ExpManager : MonoBehaviour
+{
+    public static ExpManager instance {  get; private set; }
+    public int Level;
+    public int currentExp;
+    public int ExpToNextLevel = 10;
+    public float expGrowth = 1.2f;
+    public Slider expGrowthSlider = null;
+    public TMP_Text currentLevel;
+
+    public static event Action<int> PlayerLevelUp;
+    // Start is called before the first frame update
+    private void Awake()
+    {
+        if (instance == null)
+            instance = this;
+        else
+            Destroy(gameObject);
+    }
+    void Start()
+    {
+        UpdateExpUI();
+    }
+    private void OnEnable()
+    {
+        Enemy_Health.OnMonsterDefeated += GetExperience;//监听敌人是否被击败
+    }
+    private void OnDisable()
+    {
+        Enemy_Health.OnMonsterDefeated -= GetExperience;
+    }
+    // Update is called once per frame
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            GetExperience(2);
+            Debug.Log("经验+2");
+
+        }
+    }
+    public void GetExperience(int amount)
+    {
+        currentExp += amount;
+        if(currentExp > ExpToNextLevel )
+        {
+            LevelUp();
+            
+        }
+        UpdateExpUI();
+    }
+    public void LevelUp()
+    {
+        Level++;
+        currentExp -= ExpToNextLevel;
+        ExpToNextLevel = Mathf.RoundToInt(ExpToNextLevel*expGrowth);
+        PlayerLevelUp?.Invoke(DataManager.instance.GainSkillPointPerLevel);
+        //SkillTreeManager.instance.UpdateSkillPoints(DataManager.instance.GainSkillPointPerLevel);
+    }
+    public void UpdateExpUI()
+    {
+        if(expGrowthSlider != null)
+        {
+            expGrowthSlider.maxValue = ExpToNextLevel;
+            expGrowthSlider.value = currentExp;
+            currentLevel.text = "Level:" + Level;
+        }
+    }
+}
