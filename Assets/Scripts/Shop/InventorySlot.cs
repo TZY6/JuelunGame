@@ -79,23 +79,35 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler
                     quantity--;
                     UpdateUI();
                 }
-                else//如果不处于购物状态，左键使用
+                else if(Time.timeScale == 0)
+                {
+                    return;
+                }
+                else//如果不处于时间停止状态，左键使用
                 {
                     InventoryManager.Instance.UseItem(this);
-                    Debug.Log("使用了"+ ItemSO);
+                    Debug.Log("使用了" + ItemSO);
                 }
                     
             }
             if(eventData.button== PointerEventData.InputButton.Right)
             {
-                InventoryManager.Instance.DropLoot(ItemSO, 1);
-                quantity--;
-                if(quantity<=0)
+                if (Time.timeScale == 0)
                 {
-                    ItemSO = null;
-                    quantity = 0;
+                    return;
                 }
-                UpdateUI();
+                else//如果不处于时间停止状态，左键使用
+                {
+                    InventoryManager.Instance.DropLoot(ItemSO, 1);
+                    quantity--;
+                    if (quantity <= 0)
+                    {
+                        ItemSO = null;
+                        quantity = 0;
+                    }
+                    UpdateUI();
+                }
+                
             }
         }
     }

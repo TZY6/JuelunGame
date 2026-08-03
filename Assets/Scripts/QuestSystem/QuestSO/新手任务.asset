@@ -12,11 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b30c80cb62ee2524db30a1a8b7c3b453, type: 3}
   m_Name: "\u65B0\u624B\u4EFB\u52A1"
   m_EditorClassIdentifier: 
+  QuestID: 1
   QuestName: "\u65B0\u624B\u4EFB\u52A1\uFF1A\u79FB\u52A8"
   QuestDescription: "\u8FDB\u884C\u4E00\u4E9B\u6E38\u620F\u64CD\u4F5C\u65B9\u9762\u7684\u719F\u6089"
   QuestLevel: 1
   objectives:
-  - description: "\u62DC\u8BBF\u4E00\u5EA7\u5C0F\u5C71"
+  - ObjID: 1
+    description: "\u62DC\u8BBF\u4E00\u5EA7\u5C0F\u5C71"
     targetItem: {fileID: 0}
     targetActor: {fileID: 0}
     targetLocation: {fileID: 11400000, guid: 543f25f63829be947ad184abb06c332f, type: 2}

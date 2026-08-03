@@ -89,14 +89,10 @@ public class SkillTreeManager : MonoBehaviour
             return;
         }
     }
-    //private void HandlePlayerLevelUp(int PointGained)
-    //{
-    //    UpdateSkillPoints(PointGained);
-    //    Debug.Log($"获取技能点{PointGained}");
-    //}
-    // Update is called once per frame
+    
     void Update()
     {
         
     }
+
 }

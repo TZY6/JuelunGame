@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,7 +7,7 @@ public class QuestManager : MonoBehaviour
 {
     public static QuestManager instance { get; private set; }
     public CanvasGroup QuestMainCG;
-     private Dictionary<QuestSO, Dictionary<QuestObjective, int>> questProgress = new();        //存储任务完成情况的字典
+    private Dictionary<QuestSO, Dictionary<QuestObjective, int>> questProgress = new();        //存储任务完成情况的字典
     private List<QuestSO> completedQuest = new List<QuestSO> ();
     public bool isQuestLogOpen;
     private void OnEnable()
@@ -165,5 +166,131 @@ public class QuestManager : MonoBehaviour
     {
         return QuestMainCG.alpha == 1;
     }
+    public QuestData GetSaveData()
+    {
+        QuestData data = new QuestData();
+
+        data.questProgress = new List<QuestProgressData>();
+        data.completedQuestIDs = new List<string>();
+
+        foreach (var quest in questProgress)
+        {
+            QuestProgressData questData = new QuestProgressData();
+
+            questData.questID = quest.Key.QuestID;
+            questData.objectives = new List<ObjectiveProgressData>();
+
+            foreach (var objective in quest.Value)
+            {
+                ObjectiveProgressData objectiveData = new ObjectiveProgressData();
+
+                objectiveData.objectiveID = objective.Key.ObjID;
+                objectiveData.progress = objective.Value;
+
+                questData.objectives.Add(objectiveData);
+            }
+
+            data.questProgress.Add(questData);
+        }
+
+
+        foreach (QuestSO quest in completedQuest)
+        {
+            data.completedQuestIDs.Add(quest.QuestID);
+        }
+
+
+        return data;
+    }
+    public void LoadData(QuestData data)
+    {
+        if (data == null)
+            return;
+
+        questProgress.Clear();
+        completedQuest.Clear();
+
+
+        foreach (QuestProgressData questData in data.questProgress)
+        {
+            QuestSO quest = QuestDatabase.Instance.GetQuestByID(questData.questID);
+
+            if (quest == null)
+                continue;
+
+
+            Dictionary<QuestObjective, int> objectives = new();
+
+
+            foreach (ObjectiveProgressData objectiveData in questData.objectives)
+            {
+                QuestObjective objective =
+                quest.GetObjectiveByID(objectiveData.objectiveID);
+
+
+                if (objective != null)
+                {
+                    objectives.Add(
+                        objective,
+                        objectiveData.progress
+                    );
+                }
+            }
+
+
+            questProgress.Add(
+                quest,
+                objectives
+            );
+        }
+
+
+        foreach (string questID in data.completedQuestIDs)
+        {
+            QuestSO quest =
+            QuestDatabase.Instance.GetQuestByID(questID);
+
+
+            if (quest != null)
+                completedQuest.Add(quest);
+        }
+    }
 }
- 
+public class QuestDatabase : MonoBehaviour
+{
+    public static QuestDatabase Instance;
+
+    public List<QuestSO> quests;
+
+
+    public QuestSO GetQuestByID(string id)
+    {
+        foreach (QuestSO quest in quests)
+        {
+            if (quest.QuestID == id)
+                return quest;
+        }
+
+        return null;
+    }
+}
+[Serializable]
+public class QuestData
+{
+    public List<QuestProgressData> questProgress;
+    public List<string> completedQuestIDs;
+}
+
+[Serializable]
+public class QuestProgressData
+{
+    public string questID;
+    public List<ObjectiveProgressData> objectives;
+}
+
+[Serializable]
+public class ObjectiveProgressData
+{
+    public string objectiveID;
+    public int progress;
+}

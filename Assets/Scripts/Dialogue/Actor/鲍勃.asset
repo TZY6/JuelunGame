@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7cc51c1e7782c3a44a8be9e46c513fa9, type: 3}
   m_Name: "\u9C8D\u52C3"
   m_EditorClassIdentifier: 
+  actorID: NPC_001
   actorName: "\u9C8D\u52C3"
   actorHead: {fileID: -1591425842, guid: 1bb739f6295d5de48ab7571fde4ba553, type: 3}

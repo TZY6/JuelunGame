@@ -5,6 +5,7 @@ using UnityEngine;
 public class ItemSO : ScriptableObject
 {
     // Start is called before the first frame update
+    public string ItemID;
     public string ItemName;
     [TextArea] public string ItemDescirbe;
     public Sprite icon;

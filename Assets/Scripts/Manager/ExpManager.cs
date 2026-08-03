@@ -73,4 +73,34 @@ public class ExpManager : MonoBehaviour
             currentLevel.text = "Level:" + Level;
         }
     }
+    public ExpData GetSaveData()
+    {
+        ExpData data = new ExpData();
+        data.Level = Level;
+        data.currentExp = currentExp;
+        data.ExpToNextLevel = ExpToNextLevel;
+        data.expGrowth = expGrowth;
+        return data;
+    }
+    public void LoadData(ExpData data)
+    {
+        if (data == null)
+        {
+            Debug.LogWarning("加载的玩家数据为空！");
+            return;
+        }
+
+        Level = data.Level;
+        currentExp = data.currentExp;
+        ExpToNextLevel = data.ExpToNextLevel;
+        expGrowth = data.expGrowth;
+    }
+}
+[Serializable]
+public class ExpData
+{
+    public int Level;
+    public int currentExp;
+    public int ExpToNextLevel;
+    public float expGrowth;
 }

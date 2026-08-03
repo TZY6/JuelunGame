@@ -177,4 +177,98 @@ public class InventoryManager : MonoBehaviour
             return 0;
         }
     }
+    public InventoryData GetSaveData()
+    {
+        InventoryData data = new InventoryData();
+
+        foreach (InventorySlot slot in inventorySlots)
+        {
+            if (slot.ItemSO != null && slot.quantity > 0)
+            {
+                ItemSlotData itemData = new ItemSlotData();
+
+                itemData.itemID = slot.ItemSO.ItemID;
+                itemData.quantity = slot.quantity;
+
+                data.items.Add(itemData);
+            }
+        }
+
+        return data;
+    }
+    public void LoadData(InventoryData data)
+    {
+        if (data == null)
+            return;
+
+        foreach (InventorySlot slot in inventorySlots)
+        {
+            slot.ItemSO = null;
+            slot.quantity = 0;
+            slot.UpdateUI();
+        }
+
+
+        foreach (ItemSlotData itemData in data.items)
+        {
+            ItemSO item = ItemDatabase.Instance.GetItemByID(itemData.itemID);
+
+            if (item == null)
+                continue;
+
+
+            foreach (InventorySlot slot in inventorySlots)
+            {
+                if (slot.ItemSO == null)
+                {
+                    slot.ItemSO = item;
+                    slot.quantity = itemData.quantity;
+                    slot.UpdateUI();
+                    break;
+                }
+            }
+        }
+    }
+}
+public class ItemDatabase : MonoBehaviour
+{
+    public static ItemDatabase Instance;
+
+    public List<ItemSO> items;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    public ItemSO GetItemByID(string id)
+    {
+        foreach (ItemSO item in items)
+        {
+            if (item.ItemID == id)
+                return item;
+        }
+
+        return null;
+    }
+}
+[System.Serializable]
+public class InventoryData
+{
+    public List<ItemSlotData> items = new List<ItemSlotData>();
+}
+
+[System.Serializable]
+public class ItemSlotData
+{
+    public string itemID;
+    public int quantity;
 }
