@@ -5,6 +5,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance {  get; private set; }
+    public SceneControl sceneControl;
     //public DialogueHistoryTracker historyTracker;
     [Header("持久化对象")]
     public GameObject[] ToAlwaysPersistObjs;
@@ -33,6 +34,11 @@ public class GameManager : MonoBehaviour
             return;
         }
             
+    }
+    public void SceneLoadWithOutTrigger()
+    {
+        sceneControl = GameObject.FindWithTag("SceneControl").GetComponent<SceneControl>();
+        sceneControl.OnSceneInitialization();
     }
     public void PersistObjAlways()
     {

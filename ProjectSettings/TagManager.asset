@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Tooltip
   - Confiner
+  - SceneControl
   layers:
   - Default
   - TransparentFX

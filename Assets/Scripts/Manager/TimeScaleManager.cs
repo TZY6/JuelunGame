@@ -64,7 +64,7 @@ public class TimeScaleManager : MonoBehaviour
         MenuManager.instance.menuCanvasGroup.blocksRaycasts = showMenu;
 
         // 控制时间暂停：只要 currentOnShop 或 currentOnUI 任一不为 0 则暂停
-        bool shouldPause = (currentOnShop != 0 || currentOnUI != 0);
+        bool shouldPause = (currentOnShop > 0 || currentOnUI > 0);
         if (shouldPause)
         {
             Time.timeScale = 0f;

@@ -7,6 +7,7 @@ public class MenuManager : MonoBehaviour
 {
     public static MenuManager instance { get; private set; }
     public CanvasGroup menuCanvasGroup;
+    public CanvasGroup ESCcanvas;
     public GameObject ButtonToOpen;
     [SerializeField]private CanvasGroup[] Managers;
     public GameObject[] MenuBars;
@@ -76,8 +77,7 @@ public class MenuManager : MonoBehaviour
         //Debug.Log("Update");
         //if(Input.GetKeyDown(KeyCode.F10))
         if (Input.GetButtonDown("OpenBag"))
-        {
-            
+        {            
             //Debug.Log("Notice按键按下");
             if (TimeScaleManager.Instance.currentOnUI==0)
             {
@@ -91,9 +91,24 @@ public class MenuManager : MonoBehaviour
                 CurrentBar();
                 TimeScaleManager.Instance.StartTimeScale();
             }
-
         }
-        
+        if (Input.GetButtonDown("StatusUI"))
+        {
+            if (ESCcanvas.alpha == 0)
+            {
+                QuestLogUI.instance.SetCanvasGroupActive(ESCcanvas, true);
+                TimeScaleManager.Instance.StopTimeScale(true);
+            }
+            else
+            {
+                ClocsESCCanvas();
+            }
+        }
+    }
+    public void ClocsESCCanvas()
+    {
+        QuestLogUI.instance.SetCanvasGroupActive(ESCcanvas, false);
+        TimeScaleManager.Instance.StartTimeScale(true);
     }
     [ContextMenu("重新指认managers")]
     public void ResetManagers()
