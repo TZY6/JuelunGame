@@ -57,6 +57,7 @@ public class ExpManager : MonoBehaviour
         UpdateExpUI();
         if(QuestManager.instance.IsQuestAccepted(QuestOfKilling))
         {
+            Debug.Log("检测到敌人死亡，完成战斗任务");
             QuestManager.instance.MakeQuestComplete(QuestOfKilling);
         }
     }

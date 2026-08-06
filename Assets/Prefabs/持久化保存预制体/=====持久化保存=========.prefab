@@ -6802,6 +6802,7 @@ MonoBehaviour:
   expGrowth: 1.2
   expGrowthSlider: {fileID: 4557997014602599728}
   currentLevel: {fileID: 587870748481201515}
+  QuestOfKilling: {fileID: 11400000, guid: f09b5c23a1ee08740b2b4ec5efb3733f, type: 2}
 --- !u!1 &1488969256756374747
 GameObject:
   m_ObjectHideFlags: 0
@@ -10170,6 +10171,7 @@ Transform:
   - {fileID: 7598903770203323635}
   - {fileID: 3603914316297011421}
   - {fileID: 261998864466265914}
+  - {fileID: 5686454563216087276}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7972114423053478795
@@ -14892,6 +14894,7 @@ GameObject:
   - component: {fileID: 7026171655400607966}
   - component: {fileID: 5365675628935597972}
   - component: {fileID: 4327346800470585603}
+  - component: {fileID: 4428676904433618475}
   m_Layer: 5
   m_Name: "\u4F24\u5BB3_Canvas"
   m_TagString: Untagged
@@ -14982,6 +14985,18 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &4428676904433618475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2966185890493285438}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a596455cd8b50b24f9cab657c9b8859b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2981141025141212777
 GameObject:
   m_ObjectHideFlags: 0
@@ -15657,7 +15672,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e02a7d2637c32ca46bdc95505f0a891a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  quests: []
+  quests:
+  - {fileID: 11400000, guid: d4ed04d8346afaa44b7889ac2fc2f911, type: 2}
+  - {fileID: 11400000, guid: f09b5c23a1ee08740b2b4ec5efb3733f, type: 2}
+  - {fileID: 11400000, guid: fd9b3804e507fba4f893ceab1acbf025, type: 2}
 --- !u!1 &3182373353598420314
 GameObject:
   m_ObjectHideFlags: 0
@@ -36683,6 +36701,55 @@ MonoBehaviour:
   quantity: 0
   itemIcon: {fileID: 6725348118494645736}
   amountText: {fileID: 1202584281925893705}
+--- !u!1 &7605233602738849123
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5686454563216087276}
+  - component: {fileID: 4567363457197913167}
+  m_Layer: 0
+  m_Name: "\u6E38\u620F\u8FD0\u884C\u524D\u51C6\u5907\u5DE5\u4F5C"
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5686454563216087276
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7605233602738849123}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 746.77704, y: 280.3771, z: -1.7419237}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4875375957677190608}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4567363457197913167
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7605233602738849123}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af8cf356037d7854f87d6742eef02746, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OpenObjs: []
+  CloseObjs: []
+  ToMuteCanvas: []
+  HurtPannel: {fileID: 2512434608788000727}
+  HurtCanvas: {fileID: 7026171655400607966}
 --- !u!1 &7611153348473800113
 GameObject:
   m_ObjectHideFlags: 0

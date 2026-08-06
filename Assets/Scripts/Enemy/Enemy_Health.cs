@@ -17,9 +17,14 @@ public class Enemy_Health : MonoBehaviour
     public delegate void MonsterDefeated(int exp);
     public static event MonsterDefeated OnMonsterDefeated;
 
-    public Canvas HurtCanvas;
-    public GameObject HurtPannel;
-    public GameObject HurtTMPro;
+    [SerializeField] private Canvas HurtCanvas;
+    [SerializeField] private GameObject HurtPannel;
+    [SerializeField] private GameObject HurtTMPro;
+    private void OnEnable()
+    {
+        current_Health = max_health;
+        
+    }
 
     public void HealthChange(float health, string damageType = "NORMAL")
     {
@@ -195,6 +200,9 @@ public class Enemy_Health : MonoBehaviour
         {
             HurtPannel = SetActiveControl.instance.HurtPannel;
         }
+        //HurtCanvas = Hurt_Canvas.instance.gameObject.GetComponent<Canvas>();
+        //HurtPannel = HurtCanvas.transform.GetChild(0).gameObject;
+        //HurtTMPro = HurtPannel.transform.GetChild(0).gameObject;
     }
 
     // Update is called once per frame

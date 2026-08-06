@@ -263,7 +263,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5349390142288171045}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e2d438d5f55d98f4190fe0c1214c5ace, type: 3}
   m_Name: 
@@ -327,8 +327,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ExpAward: 4
-  max_health: 100
-  current_Health: 100
+  max_health: 10
+  current_Health: 10
   EasyToHurt: 1
   HurtCanvas: {fileID: 0}
   HurtPannel: {fileID: 0}

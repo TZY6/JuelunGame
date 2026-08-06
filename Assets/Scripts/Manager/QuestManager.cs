@@ -18,11 +18,30 @@ public class QuestManager : MonoBehaviour
     {
         QuestEvent.isQuestComplete -= HandleQuestComplete;
     }
-    public void MakeQuestComplete(QuestSO questSO)   //强制完成某个任务(默认只有一个任务目标)
+    public void MakeQuestComplete(QuestSO questSO)
     {
-        questProgress[questSO][questSO.objectives[0]] = questSO.objectives[0].RequiredAmount;
-        HandleQuestComplete(questSO);
-;        Debug.Log($"任务{questSO}已被完成");
+        if (questSO == null)
+        {
+            Debug.LogWarning("尝试完成的 questSO 为空");
+            return;
+        }
+
+        // 检查任务是否已接取，若未接取则自动接取（可选）
+        if (!questProgress.ContainsKey(questSO))
+        {
+            Debug.LogWarning($"任务 {questSO.QuestName} 未接取，无法强制完成");
+            return;
+        }
+
+        // 强制将所有目标进度设为满值
+        var progressDict = questProgress[questSO];
+        foreach (var obj in questSO.objectives)
+        {
+            progressDict[obj] = obj.RequiredAmount;
+        }
+
+        UpdateObjProgress(questSO, questSO.objectives[0]);
+        Debug.Log($"任务 {questSO.QuestName} 已强制完成");
     }
     private void Awake()
     {
@@ -38,7 +57,7 @@ public class QuestManager : MonoBehaviour
     {
         AcceptQuest(QuestLogUI.instance.noAvailableQuest);
     }
-    public bool IsQuestAccepted(QuestSO questSO)
+    public bool IsQuestAccepted(QuestSO questSO)    //判断任务是否接取
     {
         if (questSO == null)
             return false; // 或者根据业务逻辑决定是否抛出异常
@@ -128,13 +147,18 @@ public class QuestManager : MonoBehaviour
         {
             newAmount = obj.RequiredAmount;
         }
-        progressDictionary[obj] = newAmount;
+        else //可能是击杀敌人类任务
+        {
+            newAmount = obj.RequiredAmount;
+        }
+            progressDictionary[obj] = newAmount;
     }
     public string GetProgressText(QuestSO questSO, QuestObjective obj)
     {
         if(IsQuestAccepted(questSO))
         {
             int currentAmount = GetCurrentAmount(questSO, obj);
+            Debug.Log("currentAmount:"+currentAmount);
             if (currentAmount >= obj.RequiredAmount)
             {
                 return "任务完成";

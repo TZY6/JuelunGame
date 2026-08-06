@@ -88,6 +88,7 @@ public class QuestLogUI : MonoBehaviour
         RefreshQuestList();
         HandleQuestClicked(noAvailableQuest);
         SetCanvasGroupActive(completeCanvas, false);
+        currentCheckQuest = noAvailableQuest;
     }
     public void RefreshQuestList()          //刷新任务log页面
     {
