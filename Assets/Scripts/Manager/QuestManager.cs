@@ -204,76 +204,72 @@ public class QuestManager : MonoBehaviour
     }
     public void LoadData(QuestData data)
     {
+        // 1. 数据为空直接返回
         if (data == null)
             return;
 
+        // 2. 确保字典和列表已初始化（防止未实例化）
+        if (questProgress == null)
+            questProgress = new Dictionary<QuestSO, Dictionary<QuestObjective, int>>();
+        if (completedQuest == null)
+            completedQuest = new List<QuestSO>();
+
+        // 3. 清空当前数据
         questProgress.Clear();
         completedQuest.Clear();
 
+        // 4. 检查 QuestDatabase 是否可用
+        var db = QuestDatabase.Instance;
+        if (db == null)
+        {
+            Debug.LogError("QuestDatabase.Instance 为 null，无法加载任务数据！");
+            return;
+        }
 
+        // 5. 加载进行中的任务
         foreach (QuestProgressData questData in data.questProgress)
         {
-            QuestSO quest = QuestDatabase.Instance.GetQuestByID(questData.questID);
-
+            QuestSO quest = db.GetQuestByID(questData.questID);
             if (quest == null)
+            {
+                Debug.LogWarning($"未找到任务 ID: {questData.questID}，跳过该任务");
                 continue;
+            }
 
-
-            Dictionary<QuestObjective, int> objectives = new();
-
+            Dictionary<QuestObjective, int> objectives = new Dictionary<QuestObjective, int>();
 
             foreach (ObjectiveProgressData objectiveData in questData.objectives)
             {
-                QuestObjective objective =
-                quest.GetObjectiveByID(objectiveData.objectiveID);
-
-
+                QuestObjective objective = quest.GetObjectiveByID(objectiveData.objectiveID);
                 if (objective != null)
                 {
-                    objectives.Add(
-                        objective,
-                        objectiveData.progress
-                    );
+                    objectives.Add(objective, objectiveData.progress);
+                }
+                else
+                {
+                    Debug.LogWarning($"任务 {questData.questID} 中未找到目标 ID: {objectiveData.objectiveID}，跳过该目标");
                 }
             }
 
-
-            questProgress.Add(
-                quest,
-                objectives
-            );
+            questProgress.Add(quest, objectives);
         }
 
-
+        // 6. 加载已完成的任务 ID
         foreach (string questID in data.completedQuestIDs)
         {
-            QuestSO quest =
-            QuestDatabase.Instance.GetQuestByID(questID);
-
-
+            QuestSO quest = db.GetQuestByID(questID);
             if (quest != null)
+            {
                 completedQuest.Add(quest);
+            }
+            else
+            {
+                Debug.LogWarning($"已完成任务列表中未找到任务 ID: {questID}，跳过");
+            }
         }
     }
 }
-public class QuestDatabase : MonoBehaviour
-{
-    public static QuestDatabase Instance;
 
-    public List<QuestSO> quests;
-
-
-    public QuestSO GetQuestByID(string id)
-    {
-        foreach (QuestSO quest in quests)
-        {
-            if (quest.QuestID == id)
-                return quest;
-        }
-
-        return null;
-    }
-}
 [Serializable]
 public class QuestData
 {

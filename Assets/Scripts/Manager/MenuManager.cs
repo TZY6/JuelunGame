@@ -97,6 +97,9 @@ public class MenuManager : MonoBehaviour
             if (ESCcanvas.alpha == 0)
             {
                 QuestLogUI.instance.SetCanvasGroupActive(ESCcanvas, true);
+                SaveManager.instance.SaveSlotCanvasGroup.alpha = 0;
+                SaveManager.instance.SaveSlotCanvasGroup.interactable = false;
+                SaveManager.instance.SaveSlotCanvasGroup.blocksRaycasts = false;
                 TimeScaleManager.Instance.StopTimeScale(true);
             }
             else

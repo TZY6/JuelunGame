@@ -19,7 +19,7 @@ public class GameBootstrap : MonoBehaviour
 
     private void Start()
     {
-        LoadGame();
+        //LoadGame();
     }
 
     private void LoadGame()
