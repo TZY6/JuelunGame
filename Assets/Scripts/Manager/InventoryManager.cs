@@ -199,8 +199,12 @@ public class InventoryManager : MonoBehaviour
     public void LoadData(InventoryData data)
     {
         if (data == null)
+        {
+            Debug.LogWarning("InventoryData 为空，无法加载");
             return;
+        }
 
+        // 1. 清空所有槽位
         foreach (InventorySlot slot in inventorySlots)
         {
             slot.ItemSO = null;
@@ -208,58 +212,57 @@ public class InventoryManager : MonoBehaviour
             slot.UpdateUI();
         }
 
+        // 2. 检查数据库是否就绪
+        if (ItemDatabase.Instance == null)
+        {
+            Debug.LogError("ItemDatabase.Instance 为 null，无法加载物品数据");
+            return;
+        }
 
+        // 3. 加载物品
+        int loadedCount = 0;
         foreach (ItemSlotData itemData in data.items)
         {
-            ItemSO item = ItemDatabase.Instance.GetItemByID(itemData.itemID);
-
-            if (item == null)
-                continue;
-
-
-            foreach (InventorySlot slot in inventorySlots)
+            if (itemData == null || string.IsNullOrEmpty(itemData.itemID))
             {
+                Debug.LogWarning("跳过无效的物品数据");
+                continue;
+            }
+
+            ItemSO item = ItemDatabase.Instance.GetItemByID(itemData.itemID);
+            if (item == null)
+            {
+                Debug.LogWarning($"未找到物品 ID: {itemData.itemID}，跳过");
+                continue;
+            }
+
+            // 按顺序放入第一个空槽
+            bool placed = false;
+            for (int i = 0; i < inventorySlots.Length; i++) // 如果是数组用 Length，List 用 Count
+            {
+                InventorySlot slot = inventorySlots[i];
                 if (slot.ItemSO == null)
                 {
                     slot.ItemSO = item;
-                    slot.quantity = itemData.quantity;
+                    slot.quantity = Mathf.Max(1, itemData.quantity);
                     slot.UpdateUI();
+                    Debug.Log($"成功加载物品 {item.name}，数量 {slot.quantity} 到槽位 {i}");
+                    placed = true;
+                    loadedCount++;
                     break;
                 }
             }
+
+            if (!placed)
+            {
+                Debug.LogWarning($"背包已满，无法放置物品 {item.name}（ID: {itemData.itemID}）");
+            }
         }
+
+        Debug.Log($"Inventory 加载完成，共加载 {loadedCount} 个物品（存档共有 {data.items.Count} 条记录）");
     }
 }
-public class ItemDatabase : MonoBehaviour
-{
-    public static ItemDatabase Instance;
 
-    public List<ItemSO> items;
-
-    private void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
-
-    public ItemSO GetItemByID(string id)
-    {
-        foreach (ItemSO item in items)
-        {
-            if (item.ItemID == id)
-                return item;
-        }
-
-        return null;
-    }
-}
 [System.Serializable]
 public class InventoryData
 {

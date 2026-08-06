@@ -146,7 +146,7 @@ GameObject:
   - component: {fileID: 3182142662797850501}
   - component: {fileID: 5484166844962485176}
   - component: {fileID: 1140929267057834303}
-  - component: {fileID: 428665445275002420}
+  - component: {fileID: 7495788700444992395}
   m_Layer: 0
   m_Name: SaveSlot
   m_TagString: Untagged
@@ -226,7 +226,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SaveSlotIndex: 0
   infoText: {fileID: 8267045691897716461}
---- !u!114 &428665445275002420
+--- !u!114 &7495788700444992395
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

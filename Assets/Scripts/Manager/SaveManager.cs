@@ -37,6 +37,33 @@ public class SaveManager : MonoBehaviour
             Debug.LogWarning("没有找到 SaveSlot 组件，请确保 UI 中有对应脚本");
         }
     }
+    public void RefreshAllLoadSlots(LoadSlot[] slots)
+    {
+        foreach (LoadSlot slot in slots)
+        {
+            int index = slot.LoadSlotIndex; // 假设 LoadSlot 也有 SaveSlotIndex
+            string fileName = "save" + index;
+            string path = GetSavePath(fileName);
+
+            if (File.Exists(path))
+            {
+                string json = File.ReadAllText(path);
+                GameSaveData data = JsonUtility.FromJson<GameSaveData>(json);
+                if (data != null && !string.IsNullOrEmpty(data.saveTime))
+                {
+                    slot.UpdateSlotDisplay(hasSave: true, dateTimeString: data.saveTime);
+                }
+                else
+                {
+                    slot.UpdateSlotDisplay(hasSave: false);
+                }
+            }
+            else
+            {
+                slot.UpdateSlotDisplay(hasSave: false);
+            }
+        }
+    }
     public void RefreshAllSaveSlots(SaveSlot[] slots)
     {
         foreach (SaveSlot slot in slots)
@@ -149,6 +176,7 @@ public class SaveManager : MonoBehaviour
         SkillTreeManager.instance.availablePoints = data.availablePoints;
 
         Debug.Log($"游戏读取成功: {path}");
+
     }
 
     public bool HasSaveData(string fileName)

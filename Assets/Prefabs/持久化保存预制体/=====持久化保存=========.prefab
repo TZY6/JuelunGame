@@ -15550,6 +15550,7 @@ GameObject:
   - component: {fileID: 3516220254797218039}
   - component: {fileID: 775339306027644963}
   - component: {fileID: 8279922753731746995}
+  - component: {fileID: 2771508347598433825}
   m_Layer: 0
   m_Name: "\u4EFB\u52A1\u7BA1\u7406\u5668"
   m_TagString: Untagged
@@ -15644,6 +15645,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   QuestMainCG: {fileID: 1467660741745580681}
   isQuestLogOpen: 0
+--- !u!114 &2771508347598433825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3168655813882537769}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e02a7d2637c32ca46bdc95505f0a891a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  quests: []
 --- !u!1 &3182373353598420314
 GameObject:
   m_ObjectHideFlags: 0
@@ -25253,6 +25267,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2072639727444332756}
   - component: {fileID: 2047745425519106601}
+  - component: {fileID: 8884691531428984717}
   m_Layer: 0
   m_Name: "\u5E93\u5B58\u7BA1\u7406\u5668"
   m_TagString: Untagged
@@ -25318,6 +25333,27 @@ MonoBehaviour:
   Gold_Text: {fileID: 2823814957923833509}
   LootPrefab: {fileID: 8964649554179711469, guid: e5b5917555794454a9c535efc8e43ff0, type: 3}
   Player: {fileID: 778085928040075243}
+--- !u!114 &8884691531428984717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5337734145498587779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00ed457523eacdd469c235b84638853e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  items:
+  - {fileID: 11400000, guid: fa69bc2f6eb10af45a654aecc3fddc02, type: 2}
+  - {fileID: 11400000, guid: 43d35bc07974eec48898c2856890ee19, type: 2}
+  - {fileID: 11400000, guid: 819343711e3527240a6f1d2346db7656, type: 2}
+  - {fileID: 11400000, guid: f0c9b1c7b1725a84a9085e522d05459b, type: 2}
+  - {fileID: 11400000, guid: c707943a2763cc0409dc7d607ceee2ba, type: 2}
+  - {fileID: 11400000, guid: d4599c13ac9a11049ab77caac38db949, type: 2}
+  - {fileID: 11400000, guid: e2d4360f9c74ebb49a09d6675ee74b7a, type: 2}
+  - {fileID: 11400000, guid: 71fa7527129188b4491099ceb5df727a, type: 2}
 --- !u!1 &5343238921984358846
 GameObject:
   m_ObjectHideFlags: 0
