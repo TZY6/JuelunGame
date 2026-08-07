@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 public class PlayerHealth : MonoBehaviour
 {
+    public static PlayerHealth Instance {  get; private set; }
     //[SerializeField]
     //private int current_Health = 0;
     //[SerializeField]
@@ -15,7 +16,13 @@ public class PlayerHealth : MonoBehaviour
     {
         UpdateHealth();
     }
-
+    private void OnEnable()
+    {
+        if (Instance != null)
+            Destroy(gameObject);
+        else
+            Instance = this;
+    }
     // Update is called once per frame
     void Update()
     {

@@ -11,6 +11,8 @@ public class SaveManager : MonoBehaviour
     public CanvasGroup SaveSlotCanvasGroup;
     public SaveSlot[] SaveSlots;
     public CanvasGroup SaveConfirm;
+    public CanvasGroup ShopCanvas;
+    public Camera NPCcamera;
     private void Awake()
     {
         if (instance == null)

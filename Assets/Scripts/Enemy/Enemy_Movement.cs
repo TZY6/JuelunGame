@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class Enemy_Movement : MonoBehaviour
 {
+    [Header("初始化敌人位置")]
+    public Vector3 StartPos;
+
     [Header("Components")]
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Rigidbody2D rbCollision;
@@ -33,7 +36,16 @@ public class Enemy_Movement : MonoBehaviour
     //private Rigidbody2D Enemyrb;
     // 属性：只读状态，供外部查询
     public EnemyState State => currentState;
-
+    private void OnEnable()
+    {
+        
+        InitializeEnemyState();
+    }
+    public void InitializeEnemyState()
+    {
+        transform.position = StartPos;
+        gameObject.GetComponent<Enemy_Health>().current_Health = gameObject.GetComponent<Enemy_Health>().max_health;
+    }
     public void EnemyKonckedBack(Transform player, float force, float knockbackTime ,float stunTime)
     {
         isKnocked = true;

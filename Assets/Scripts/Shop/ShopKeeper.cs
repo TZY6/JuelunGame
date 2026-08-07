@@ -31,8 +31,18 @@ public class ShopKeeper : MonoBehaviour
         {
             if(Input.GetButtonDown("Interact"))
             {
+                if(ShopCanvasGroup == null)
+                {
+                    ShopCanvasGroup = SaveManager.instance?.ShopCanvas;
+                    
+                }
+                if(NpcCamera == null)
+                {
+                    NpcCamera = SaveManager.instance?.NPCcamera;
+                }
                 if(!isShopOpen)
                 {
+                    
                     isShopOpen = true;
                     ShopCanvasGroup.alpha = 1;
                     ShopCanvasGroup.interactable = true;

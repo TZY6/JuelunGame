@@ -10220,6 +10220,8 @@ MonoBehaviour:
   - {fileID: 3090579517932961452}
   - {fileID: 7655585749372188459}
   SaveConfirm: {fileID: 6122556315874059169}
+  ShopCanvas: {fileID: 8593060878027163821}
+  NPCcamera: {fileID: 2962329897958502133}
 --- !u!114 &6211212604833634724
 MonoBehaviour:
   m_ObjectHideFlags: 0

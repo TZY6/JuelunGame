@@ -215,7 +215,7 @@ public class DataManager : MonoBehaviour
         //数据相关
         data.GainSkillPointPerLevel = GainSkillPointPerLevel;
         data.GoldAmount = GoldAmount;
-
+        data.PlayerPositon = PlayerHealth.Instance.gameObject.transform.position;
 
         return data;
     }
@@ -283,6 +283,10 @@ public class DataManager : MonoBehaviour
         //数据相关
         GainSkillPointPerLevel = data.GainSkillPointPerLevel;
         GoldAmount = data.GoldAmount;
+
+        //调用初始化脚本
+        PlayerHealth.Instance.UpdateHealth();
+        PlayerHealth.Instance.gameObject.transform.position = data.PlayerPositon;
     }
 }
 [Serializable]
@@ -338,4 +342,5 @@ public class PlayerData
     [Header("数据相关")]
     public int GainSkillPointPerLevel;
     public int GoldAmount;
+    public Vector3 PlayerPositon;
 }

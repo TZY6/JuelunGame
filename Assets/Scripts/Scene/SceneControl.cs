@@ -57,8 +57,9 @@ public class SceneControl : MonoBehaviour
             Debug.Log("未找到存档 save0，已自动创建初始存档");
         }
 
-        // 2. 加载存档
+        // 2. 加载空档
         SaveManager.instance.LoadGame("save0");
+        Debug.Log("载入默认存档");
         EnterRPG();
     }
     public void EnterRPG(string TargetScene=null)
