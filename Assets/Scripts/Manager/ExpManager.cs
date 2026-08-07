@@ -14,7 +14,7 @@ public class ExpManager : MonoBehaviour
     public float expGrowth = 1.2f;
     public Slider expGrowthSlider = null;
     public TMP_Text currentLevel;
-
+    public QuestSO QuestOfKilling;
     public static event Action<int> PlayerLevelUp;
     // Start is called before the first frame update
     private void Awake()
@@ -39,12 +39,12 @@ public class ExpManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            GetExperience(2);
-            Debug.Log("经验+2");
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    GetExperience(2);
+        //    Debug.Log("经验+2");
 
-        }
+        //}
     }
     public void GetExperience(int amount)
     {
@@ -55,6 +55,10 @@ public class ExpManager : MonoBehaviour
             
         }
         UpdateExpUI();
+        if(QuestManager.instance.IsQuestAccepted(QuestOfKilling))
+        {
+            QuestManager.instance.MakeQuestComplete(QuestOfKilling);
+        }
     }
     public void LevelUp()
     {

@@ -14,4 +14,8 @@ public class LocationArrivedTrigger : MonoBehaviour
             Destroy(gameObject);//防止每次进入都触发
         }
     }
+    private void OnValidate()
+    {
+        gameObject.name = locationSO.name;
+    }
 }

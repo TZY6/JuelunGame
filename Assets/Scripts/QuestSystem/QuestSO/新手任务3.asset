@@ -14,14 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   QuestID: 3
   QuestName: "\u65B0\u624B\u4EFB\u52A13\uFF1A\u79FB\u52A8"
-  QuestDescription: "\u8FDB\u884C\u4E00\u4E9B\u6E38\u620F\u64CD\u4F5C\u65B9\u9762\u7684\u719F\u6089"
+  QuestDescription: "\u53BB\u5230\u6CB3\u5BF9\u9762\u8BD5\u4E00\u4E0B"
   QuestLevel: 1
   objectives:
   - ObjID: 1
     description: "\u62DC\u8BBF\u4E00\u5EA7\u5C0F\u6865"
     targetItem: {fileID: 0}
     targetActor: {fileID: 0}
-    targetLocation: {fileID: 0}
+    targetLocation: {fileID: 11400000, guid: 658650ea2b56ed84099845bf05e55fcf, type: 2}
     RequiredAmount: 1
     CurrentAmount: 0
   rewards:
