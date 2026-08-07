@@ -14,8 +14,8 @@ public class DialogueLine
 {    
     public ActorSO Speaker;
     [TextArea(3,5)] public string Text;
-    public QuestSO OfferQuest;
-    public QuestSO CompleteQuest;
+    public QuestSO[] OfferQuest;
+    public QuestSO[] CompleteQuest;
 }
 [System.Serializable]
 public class DialogueOption

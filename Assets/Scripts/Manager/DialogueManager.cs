@@ -42,12 +42,28 @@ public class DialogueManager : MonoBehaviour
         DialogueLine line = currentDialogue.Lines[dialogueIndex];
         actorHead.sprite = line.Speaker.actorHead;
         actorName.text = line.Speaker.actorName;
-        
+
         DialogueText.text = ReplacePlaceholders(line.Text, Player);
-        if (line.OfferQuest != null)
-            GetNewQuest.instance.AddCurrentQuest(line.OfferQuest);
-        if (line.CompleteQuest != null)
-            QuestManager.instance.MakeQuestComplete(line.CompleteQuest);
+
+        // 处理提供任务（数组）
+        if (line.OfferQuest != null && line.OfferQuest.Length > 0)
+        {
+            foreach (QuestSO quest in line.OfferQuest)
+            {
+                if (quest != null)
+                    GetNewQuest.instance.AddCurrentQuest(quest);
+            }
+        }
+
+        // 处理完成任务（数组）
+        if (line.CompleteQuest != null && line.CompleteQuest.Length > 0)
+        {
+            foreach (QuestSO quest in line.CompleteQuest)
+            {
+                if (quest != null)
+                    QuestManager.instance.MakeQuestComplete(quest);
+            }
+        }
     }
 
     public void ContinueCurrentConversation()
