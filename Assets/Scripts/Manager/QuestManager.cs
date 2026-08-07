@@ -21,6 +21,8 @@ public class QuestManager : MonoBehaviour
     public void MakeQuestComplete(QuestSO questSO)   //强制完成某个任务(默认只有一个任务目标)
     {
         questProgress[questSO][questSO.objectives[0]] = questSO.objectives[0].RequiredAmount;
+        HandleQuestComplete(questSO);
+;        Debug.Log($"任务{questSO}已被完成");
     }
     private void Awake()
     {
