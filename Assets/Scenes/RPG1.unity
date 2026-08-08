@@ -18490,6 +18490,10 @@ PrefabInstance:
       propertyPath: ItemSO
       value: 
       objectReference: {fileID: 11400000, guid: 43d35bc07974eec48898c2856890ee19, type: 2}
+    - target: {fileID: 3642207901992950666, guid: e5b5917555794454a9c535efc8e43ff0, type: 3}
+      propertyPath: amount
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7206162637946241488, guid: e5b5917555794454a9c535efc8e43ff0, type: 3}
       propertyPath: m_LocalPosition.x
       value: 16.485828
@@ -18744,7 +18748,7 @@ PrefabInstance:
       objectReference: {fileID: 11400000, guid: 819343711e3527240a6f1d2346db7656, type: 2}
     - target: {fileID: 3642207901992950666, guid: e5b5917555794454a9c535efc8e43ff0, type: 3}
       propertyPath: amount
-      value: 30
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7206162637946241488, guid: e5b5917555794454a9c535efc8e43ff0, type: 3}
       propertyPath: m_LocalPosition.x
@@ -53094,7 +53098,7 @@ Tilemap:
       - {fileID: 1561920548, guid: ddd2d61219caeeb439150c68629a7bf1, type: 3}
       - {fileID: -869742403, guid: ddd2d61219caeeb439150c68629a7bf1, type: 3}
       - {fileID: 906993131, guid: ddd2d61219caeeb439150c68629a7bf1, type: 3}
-      m_AnimationSpeed: 5
+      m_AnimationSpeed: 5.0000005
       m_AnimationTimeOffset: 0
       m_Flags: 0
   - first: {x: -8, y: 11, z: 0}
@@ -56443,6 +56447,10 @@ PrefabInstance:
     - target: {fileID: 5311640744189709239, guid: 7ebfcb65ecb19774cb858deb7aa0eb0d, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5330873323707131256, guid: 7ebfcb65ecb19774cb858deb7aa0eb0d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: BackToMain
       objectReference: {fileID: 0}
     - target: {fileID: 5348738632874831729, guid: 7ebfcb65ecb19774cb858deb7aa0eb0d, type: 3}
       propertyPath: m_AnchorMax.y

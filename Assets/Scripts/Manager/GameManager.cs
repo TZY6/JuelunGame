@@ -35,10 +35,17 @@ public class GameManager : MonoBehaviour
         }
             
     }
-    public void SceneLoadWithOutTrigger()
+    public void SceneLoadWithOutTrigger()   //无需trigger的场景切换函数
     {
-        sceneControl = GameObject.FindWithTag("SceneControl").GetComponent<SceneControl>();
+        if (sceneControl == null)
+            sceneControl = GameObject.FindWithTag("SceneControl").GetComponent<SceneControl>();
         sceneControl.OnSceneInitialization();
+    }
+    public void BackToMain()
+    {
+        if(sceneControl==null)
+             sceneControl = GameObject.FindWithTag("SceneControl").GetComponent<SceneControl>();
+        sceneControl.BackToMainMenu();
     }
     public void PersistObjAlways()
     {

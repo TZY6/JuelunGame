@@ -11,6 +11,7 @@ public class ShopManager : MonoBehaviour
     public Button ShowWeapnButton;
     public Button ShowDefenButton;
     public ShopKeeper DefaultShopKeeper;
+    public ShopKeeper currentShopKeeper;
     [SerializeField] private ShopSlot[] shopSlots;
     // Start is called before the first frame update
     public void FillShopSlots(List<ShopItem> shopItems)
@@ -39,6 +40,7 @@ public class ShopManager : MonoBehaviour
     }
     public void SetChangeButton(ShopKeeper activeShop, bool isShopping)
     {
+        currentShopKeeper = activeShop;
         if (activeShop == null)
         {
             activeShop = DefaultShopKeeper;
@@ -59,7 +61,7 @@ public class ShopManager : MonoBehaviour
         }
         else
         {
-            Destroy(instance);
+            Destroy(gameObject);
         }
     }
     // Update is called once per frame

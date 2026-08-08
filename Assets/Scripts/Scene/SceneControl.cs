@@ -62,6 +62,13 @@ public class SceneControl : MonoBehaviour
         Debug.Log("载入默认存档");
         EnterRPG();
     }
+    public void BackToMainMenu()
+    {
+        MenuManager.instance.ClocsESCCanvas();
+        animator.SetBool("Ready", true);
+        Debug.Log("返回主菜单");
+        StartCoroutine(DelayFade("Ready", false));
+    }
     public void EnterRPG(string TargetScene=null)
     {
         MenuManager.instance.ClocsESCCanvas();
