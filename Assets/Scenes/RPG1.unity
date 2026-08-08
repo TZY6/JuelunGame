@@ -53098,7 +53098,7 @@ Tilemap:
       - {fileID: 1561920548, guid: ddd2d61219caeeb439150c68629a7bf1, type: 3}
       - {fileID: -869742403, guid: ddd2d61219caeeb439150c68629a7bf1, type: 3}
       - {fileID: 906993131, guid: ddd2d61219caeeb439150c68629a7bf1, type: 3}
-      m_AnimationSpeed: 5.0000005
+      m_AnimationSpeed: 5
       m_AnimationTimeOffset: 0
       m_Flags: 0
   - first: {x: -8, y: 11, z: 0}
@@ -55492,6 +55492,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2293827271470662778, guid: 7ebfcb65ecb19774cb858deb7aa0eb0d, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2357818104109537055, guid: 7ebfcb65ecb19774cb858deb7aa0eb0d, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -55660,10 +55664,6 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3126470060586466697, guid: 7ebfcb65ecb19774cb858deb7aa0eb0d, type: 3}
-      propertyPath: NPCcamera
-      value: 
-      objectReference: {fileID: 8053727388562392242}
     - target: {fileID: 3145638000682384066, guid: 7ebfcb65ecb19774cb858deb7aa0eb0d, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -56447,10 +56447,6 @@ PrefabInstance:
     - target: {fileID: 5311640744189709239, guid: 7ebfcb65ecb19774cb858deb7aa0eb0d, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5330873323707131256, guid: 7ebfcb65ecb19774cb858deb7aa0eb0d, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: BackToMain
       objectReference: {fileID: 0}
     - target: {fileID: 5348738632874831729, guid: 7ebfcb65ecb19774cb858deb7aa0eb0d, type: 3}
       propertyPath: m_AnchorMax.y

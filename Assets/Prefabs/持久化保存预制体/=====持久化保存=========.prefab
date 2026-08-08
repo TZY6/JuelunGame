@@ -17508,7 +17508,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u6280\u80FD\u4E66:1\n\u5C5E\u6027\u7F16\u8F91\u5668:esc\n\u5207\u6362\u88C5\u5907:q\n\u653B\u51FB:k\n\u4EA4\u4E92\u3001\u5BF9\u8BDD:f\n\u79FB\u52A8:wasd\n\u51B0\u96EA\u9B54\u6CD5:u\n\u706B\u7130\u9B54\u6CD5:I\n\u96F7\u7535\u9B54\u6CD5:o\n"
+  m_text: "\u6280\u80FD\u4E66:b\n\u5C5E\u6027\u7F16\u8F91\u5668:esc\n\u5207\u6362\u88C5\u5907:q\n\u653B\u51FB:k\n\u4EA4\u4E92\u3001\u5BF9\u8BDD:f\n\u79FB\u52A8:wasd\n\u51B0\u96EA\u9B54\u6CD5:u\n\u706B\u7130\u9B54\u6CD5:I\n\u96F7\u7535\u9B54\u6CD5:o\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 33627c2c3b41c264d96c2ad74d715c52, type: 2}
   m_sharedMaterial: {fileID: 1780162631593750950, guid: 33627c2c3b41c264d96c2ad74d715c52, type: 2}
@@ -37009,7 +37009,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 7972114423053478795}
         m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: SceneLoadWithOutTrigger
+        m_MethodName: BackToMain
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -40199,6 +40199,7 @@ MonoBehaviour:
   ShowWeapnButton: {fileID: 3705327295993204259}
   ShowDefenButton: {fileID: 3689234656571176036}
   DefaultShopKeeper: {fileID: 0}
+  currentShopKeeper: {fileID: 0}
   shopSlots:
   - {fileID: 6918265701422178069}
   - {fileID: 4137001799234157748}
