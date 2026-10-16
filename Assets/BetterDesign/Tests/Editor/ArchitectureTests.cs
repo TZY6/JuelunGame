@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using BetterDesign.Core;
 using NUnit.Framework;
+using BetterDesign.Editor;
 
 namespace BetterDesign.Tests
 {
@@ -13,6 +14,23 @@ namespace BetterDesign.Tests
             public int Rents, Returns;
             public void OnRent() { Rents++; }
             public void OnReturn() { Returns++; }
+        }
+        [Test] public void AuthoredSceneReferencesAndRequestedFontAreComplete()
+        {
+            Assert.DoesNotThrow(() => DemoValidation.Validate());
+        }
+        [Test] public void RuntimeContainsNoSceneObjectFactories()
+        {
+            string[] paths = UnityEditor.AssetDatabase.FindAssets("t:MonoScript",new[] { "Assets/BetterDesign/Runtime" });
+            foreach (string asset in paths)
+            {
+                string source = File.ReadAllText(UnityEditor.AssetDatabase.GUIDToAssetPath(asset));
+                StringAssert.DoesNotContain("new GameObject(",source);
+                StringAssert.DoesNotContain("AddComponent<",source);
+                StringAssert.DoesNotContain("Instantiate(",source);
+                StringAssert.DoesNotContain("Sprite.Create(",source);
+                StringAssert.DoesNotContain("new Texture2D(",source);
+            }
         }
         [Test] public void UnsubscribeDuringDispatchIsSafe()
         {

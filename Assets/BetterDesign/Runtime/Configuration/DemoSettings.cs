@@ -12,8 +12,5 @@ namespace BetterDesign
         [Range(1, 40)] public int enemyDamage = 10;
         [Range(1, 60)] public int baseEnemyHealth = 50;
         [Range(1, 10)] public float spellCooldown = 1.2f;
-        public RuntimeAnimatorController heroAnimator;
-        public RuntimeAnimatorController enemyAnimator;
-        public Sprite heroSprite, enemySprite, groundSprite;
     }
 }

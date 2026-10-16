@@ -8,21 +8,21 @@ namespace BetterDesign
     public sealed class ActorView : MonoBehaviour, IPoolItem
     {
         public bool IsRented { get; set; }
-        public SpriteRenderer Renderer { get; private set; }
-        public Animator Animation { get; private set; }
+        [SerializeField] SpriteRenderer spriteRenderer;
+        [SerializeField] Animator animator;
+        public SpriteRenderer Renderer { get { return spriteRenderer; } }
+        public Animator Animation { get { return animator; } }
         static readonly int Speed = UnityEngine.Animator.StringToHash("Speed");
         static readonly int Locomotion = UnityEngine.Animator.StringToHash("Base Layer.Locomotion");
         static readonly int Attack = UnityEngine.Animator.StringToHash("Base Layer.Attack");
         ActorState lastState;
         float flash;
         Color normalColor;
-        public void Configure(Sprite sprite, RuntimeAnimatorController controller, Color tint)
+        public bool HasSceneReferences { get { return spriteRenderer != null && animator != null; } }
+        public void Initialize()
         {
-            Renderer = gameObject.AddComponent<SpriteRenderer>();
-            Renderer.sprite = sprite; Renderer.color = normalColor = tint;
-            Animation = gameObject.AddComponent<Animator>();
-            Animation.runtimeAnimatorController = controller;
-            Animation.applyRootMotion = false;
+            if (!HasSceneReferences) throw new System.InvalidOperationException(name + ": actor scene references missing.");
+            normalColor = Renderer.color;
             lastState = ActorState.Idle;
         }
         public void Present(ActorState state, Vector2 movement, float dt)

@@ -25,11 +25,11 @@ namespace BetterDesign
         public readonly DemoSettings Settings;
         public readonly ISaveStore Saves;
         readonly IPlayerInput input;
-        readonly Transform root, actors, effects;
+        readonly WorldSceneBindings bindings;
+        readonly Vector2[] enemySpawns;
+        readonly Vector2 heroSpawn;
         readonly FixedPool<ActorView> enemyPool;
         readonly FixedPool<Effect> effectPool;
-        readonly Sprite square;
-        readonly Texture2D pixel;
         int enemyCount;
         public int LivingEnemies { get; private set; }
         public int PoolActive { get { return enemyPool.Active + effectPool.Active; } }
@@ -37,55 +37,35 @@ namespace BetterDesign
         public int PoolMisses { get { return effectPool.Misses + enemyPool.Misses; } }
         public const int EffectCapacity = 48;
         public bool Paused { get; private set; }
-        public Vector2 Beacon { get { return new Vector2(-7, 0); } }
+        public Vector2 Beacon { get { return bindings.beacon.position; } }
 
-        public DemoWorld(Transform root, DemoSettings settings, ISaveStore saves, IPlayerInput input)
+        public DemoWorld(WorldSceneBindings bindings, DemoSettings settings, ISaveStore saves, IPlayerInput input)
         {
-            this.root = root; Settings = settings; Saves = saves; this.input = input;
+            if (bindings == null || !bindings.IsConfigured)
+                throw new InvalidOperationException("WorldManager scene references are incomplete.");
+            this.bindings = bindings; Settings = settings; Saves = saves; this.input = input;
             Model = new GameModel(Events);
-            actors = Group("Actors - Views + injected Controllers");
-            effects = Group("Pool - 48 prewarmed effects");
-            pixel = new Texture2D(1, 1); pixel.SetPixel(0, 0, Color.white); pixel.Apply();
-            square = Sprite.Create(pixel, new Rect(0, 0, 1, 1), new Vector2(.5f, .5f), 1);
-            BuildArena();
-            enemyPool = new FixedPool<ActorView>(16, () => CreateActor("Sentinel [pooled]", false));
-            effectPool = new FixedPool<Effect>(EffectCapacity, () => new Effect(CreateSprite("Effect [pooled]", effects, square, Color.cyan, Vector2.zero, new Vector2(.2f,.2f), 300)));
-            Hero = new ActorController(this, CreateActor("Hero - FSM / IDamageable", true), true, 0, GameModel.MaxHp, Settings);
-            Hero.Reset(Model.Hp, new Vector2(-5,0));
+            heroSpawn = bindings.hero.transform.position;
+            enemySpawns = new Vector2[bindings.enemySlots.Length];
+            for (int i = 0; i < enemySpawns.Length; i++)
+            {
+                enemySpawns[i] = bindings.enemySlots[i].transform.position;
+                bindings.enemySlots[i].Initialize();
+            }
+            bindings.hero.Initialize();
+            int actorIndex = 0, effectIndex = 0;
+            // Factories register pre-existing scene components; they create no GameObjects.
+            enemyPool = new FixedPool<ActorView>(bindings.enemySlots.Length, () => bindings.enemySlots[actorIndex++]);
+            effectPool = new FixedPool<Effect>(bindings.effectSlots.Length, () => new Effect(bindings.effectSlots[effectIndex++]));
+            Hero = new ActorController(this, bindings.hero, true, 0, GameModel.MaxHp, Settings);
+            Hero.Reset(Model.Hp, heroSpawn);
             SpawnWave();
         }
-        Transform Group(string name) { var go = new GameObject(name); go.transform.SetParent(root, false); return go.transform; }
-        SpriteRenderer CreateSprite(string name, Transform parent, Sprite sprite, Color color, Vector2 at, Vector2 scale, int order)
+        public Vector2 Clamp(Vector2 p)
         {
-            var go = new GameObject(name); go.transform.SetParent(parent, false); go.transform.position = at; go.transform.localScale = scale;
-            var renderer = go.AddComponent<SpriteRenderer>(); renderer.sprite = sprite; renderer.color = color; renderer.sortingOrder = order;
-            return renderer;
+            return new Vector2(Mathf.Clamp(p.x,bindings.minimum.x,bindings.maximum.x),
+                Mathf.Clamp(p.y,bindings.minimum.y,bindings.maximum.y));
         }
-        ActorView CreateActor(string name, bool hero)
-        {
-            var go = new GameObject(name); go.transform.SetParent(actors, false);
-            var view = go.AddComponent<ActorView>();
-            view.Configure(hero ? Settings.heroSprite : Settings.enemySprite, hero ? Settings.heroAnimator : Settings.enemyAnimator, hero ? Color.white : new Color(1,.65f,.55f));
-            return view;
-        }
-        void BuildArena()
-        {
-            var terrain = Group("Sanctuary - RPG1 palette");
-            CreateSprite("Water border", terrain, square, new Color(.12f,.32f,.40f), Vector2.zero, new Vector2(24,16), -110);
-            for (int x = -10; x <= 9; x++)
-                for (int y = -6; y <= 5; y++)
-                    CreateSprite("Grass", terrain, Settings.groundSprite != null ? Settings.groundSprite : square,
-                        Settings.groundSprite != null ? Color.white : new Color(.29f,.44f,.31f), new Vector2(x,y), Vector2.one, -100);
-            CreateSprite("Sanctuary path", terrain, square, new Color(.62f,.59f,.40f), new Vector2(-6,0), new Vector2(4,1.5f), -90);
-            CreateSprite("Quest beacon", terrain, square, new Color(.2f,.9f,.9f), Beacon, new Vector2(.55f,1.1f), -80);
-            CreateSprite("Combat field", terrain, square, new Color(.72f,.76f,.45f,.12f), new Vector2(2,0), new Vector2(12,9), -80);
-            for (int x = -10; x <= 10; x++)
-            {
-                CreateSprite("North boundary", terrain, square, new Color(.16f,.30f,.25f), new Vector2(x,6), new Vector2(.9f,.45f), -70);
-                CreateSprite("South boundary", terrain, square, new Color(.16f,.30f,.25f), new Vector2(x,-6), new Vector2(.9f,.45f), -70);
-            }
-        }
-        public Vector2 Clamp(Vector2 p) { return new Vector2(Mathf.Clamp(p.x,-9.5f,9.5f), Mathf.Clamp(p.y,-5.4f,5.4f)); }
         public void Tick(float dt)
         {
             if (Paused) return;
@@ -133,8 +113,7 @@ namespace BetterDesign
             int count = Mathf.Min(6 + (Model.Wave - 1) * 2, 16);
             for (int i = 0; i < count; i++)
             {
-                float angle = Mathf.PI * 2 * i / count;
-                AddEnemy(new Vector2(3 + Mathf.Cos(angle)*4, Mathf.Sin(angle)*3.7f), Mathf.Min(500, Settings.baseEnemyHealth + (Model.Wave-1)*10));
+                AddEnemy(enemySpawns[i], Mathf.Min(500, Settings.baseEnemyHealth + (Model.Wave-1)*10));
             }
             LivingEnemies = enemyCount;
         }
@@ -222,13 +201,12 @@ namespace BetterDesign
         public void NewRun()
         {
             enemyPool.ReturnAll(); effectPool.ReturnAll(); Paused = false;
-            Model.Restore(new SaveData()); Hero.Reset(Model.Hp,new Vector2(-5,0)); SpawnWave();
+            Model.Restore(new SaveData()); Hero.Reset(Model.Hp,heroSpawn); SpawnWave();
             Events.Notice.Publish("New run. Checkpoint kept until you save.");
         }
         public void Dispose()
         {
             enemyPool.ReturnAll(); effectPool.ReturnAll();
-            UnityEngine.Object.Destroy(square); UnityEngine.Object.Destroy(pixel);
         }
     }
 }

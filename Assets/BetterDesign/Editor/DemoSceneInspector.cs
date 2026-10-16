@@ -9,15 +9,8 @@ namespace BetterDesign.Editor
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
-            EditorGUILayout.HelpBox("Press Play to compose the sanctuary, actors, object pools and UGUI. Everything is owned by this scene root. Inspect the live hierarchy and press F1 for architecture telemetry.",MessageType.Info);
-            if (GUILayout.Button("Validate scene and resource references")) DemoValidation.Validate();
-        }
-        void OnSceneGUI()
-        {
-            Handles.color = new Color(.3f,.9f,.8f,1);
-            Handles.DrawWireCube(Vector3.zero,new Vector3(20,12,0));
-            Handles.Label(new Vector3(-7,0,0),"Sanctuary / Quest beacon");
-            Handles.Label(new Vector3(2,1,0),"Combat arena (created on Play)");
+            EditorGUILayout.HelpBox("This scene contains the map, hero, enemies, effect slots, Camera, EventSystem and TMP UI. Edit those objects directly in the Hierarchy. GameManager binds their serialized references; Play does not create scene objects.",MessageType.Info);
+            if (GUILayout.Button("Validate authored scene and TMP font")) DemoValidation.Validate();
         }
     }
 }

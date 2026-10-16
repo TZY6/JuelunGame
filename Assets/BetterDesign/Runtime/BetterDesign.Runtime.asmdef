@@ -3,6 +3,7 @@
   "rootNamespace": "BetterDesign",
   "references": [
     "BetterDesign.Core",
-    "UnityEngine.UI"
+    "UnityEngine.UI",
+    "Unity.TextMeshPro"
   ]
 }

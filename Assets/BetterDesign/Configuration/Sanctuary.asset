@@ -19,8 +19,3 @@ MonoBehaviour:
   enemyDamage: 10
   baseEnemyHealth: 50
   spellCooldown: 1.2
-  heroAnimator: {fileID: 9100000, guid: 7a5f5d433140c438383ae635aa28d532, type: 2}
-  enemyAnimator: {fileID: 9100000, guid: 8a8e217d5bc308846de57f6ff65503a6, type: 2}
-  heroSprite: {fileID: 786807703, guid: 18e7be5fc43fb1b43baec2a647e94177, type: 3}
-  enemySprite: {fileID: -8426932590203072280, guid: c47a96ea76a32479fadb0e867cd08899, type: 3}
-  groundSprite: {fileID: -1234425174, guid: 0ea6e41cd44260040abfa324e3283b61, type: 3}

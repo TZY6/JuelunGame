@@ -7,7 +7,7 @@ Unity **2022.3.29f1** 的独立 2D 架构演示。所有新增资源均在 `Asse
 1. 检出本 PR 分支，使用原项目的 Unity 2022.3.29f1 打开。
 2. 等待编译，打开 **Assets/BetterDesign/Scenes/BetterDesignDemo.unity**，点击 **Play**。
 3. 或通过 **Tools → BetterDesign → Open Demo** 打开。
-4. 场景采用显式代码装配：编辑模式中只有配置好的入口；进入 Play 后会生成场地、角色、预热池、相机、EventSystem 和 UGUI。无需执行生成器或修改 Build Settings。
+4. **场景已完整序列化**：编辑模式中可以直接看到地图、玩家、6 个首波敌人、10 个备用敌人、48 个备用特效、Camera、EventSystem、管理器和整套 UI。无需点击生成按钮，Play 时也不会创建 GameObject 或添加组件。后续波次与法术只复用已有对象。
 5. 在 Game 视图中操作；建议 16:10 / 16:9，1280×800 或更高。F1 关闭右侧观察面板，可获得更多战场视野。
 6. 单独打开本场景进行体验。旧项目的持久化 Manager 不属于本演示的生命周期。
 
@@ -31,12 +31,13 @@ Unity **2022.3.29f1** 的独立 2D 架构演示。所有新增资源均在 `Asse
 ## 架构导航
 
 - **Core**（无 UnityEngine 引用）：`GameModel` 是游戏数据与规则；`Signal<T>` 是有生命周期的类型化事件；`FixedPool<T>` 是定容对象池；`ActorStateMachine` 维护显式状态与锁定规则。
+- **场景 Hierarchy**：`Managers` 下是 GameManager、WorldManager 和 PersistenceManager；`Map` 下是可逐个编辑的地面、道路、院落与边界；`Actors` 下是玩家及 16 个敌人槽位；`Pool` 下是 48 个预置特效；`UI - Canvas / UIManager` 下是 HUD、任务、架构面板及暂停/背包面板。备用对象默认 inactive，可在 Inspector 中预览。
 - **Runtime/Gameplay**：`ActorController` 接收输入接口，管理攻击前摇、移动、冲刺、硬直、死亡和 AI；`DemoWorld` 装配角色、战斗、波次、存档快照与池化对象。
 - **Runtime/Presentation**：`ActorView` 只负责 SpriteRenderer、Animator、朝向、排序和受击反馈。
 - **Runtime/UI**：`DemoHud` 是 UGUI View + Presenter，按钮发送命令，模型事件驱动刷新；`PanelStack` 管理模态返回与暂停所有权。
 - **Runtime/Infrastructure**：`ISaveStore` / `JsonSaveStore` 提供版本化 JSON、校验和、临时文件 flush、原子替换、备份恢复、失败时保留当前世界。
-- **Runtime/Configuration**：`DemoSettings` ScriptableObject 控制数值和美术依赖，无需改动玩法代码。
-- **DemoScene**：唯一入口，在 Awake 注入 `IPlayerInput` / `ISaveStore`，统一 Tick，退出时解除订阅和销毁生成资源。无全局单例、静态事件、跨场景残留。
+- **Runtime/Configuration**：`DemoSettings` ScriptableObject 仅控制战斗数值；美术、Animator 与 UI 均直接配置在实际场景组件上，无需改动玩法代码。
+- **DemoScene**：唯一入口，在 Awake 注入 `IPlayerInput` / `ISaveStore`，统一 Tick，退出时解除订阅并归还池化对象。无全局单例、静态事件、跨场景残留。GameManager 在 Awake 中只绑定已存在的对象；WorldManager 保存玩家、敌人、特效、信标和地图的场景引用。PersistenceManager 是实际挂在场景对象上的存档服务。
 - **Editor / Tests**：资源验证、Scene 视图提示与 EditMode 测试。程序集依赖为 Core ← Runtime ← Editor/Tests。
 
 ```mermaid
@@ -53,6 +54,14 @@ flowchart LR
 
 这是一份用于观察与扩展的游戏 demo：MVC 体现在模型、控制器、表现适配器分离；UI 使用 Presenter 将模型事件映射到 UGUI。刻意不引入自动扫描的服务定位器或第三方框架。
 
+## 场景 UI 与字体
+
+所有 21 个文字对象都使用 **TextMeshProUGUI**，在场景里直接引用 `Assets/Fonts/7000msyhbdallicon SDF.asset`（GUID `563ebed8c882c5e458174c07361ae986`），不修改字体资源或 TMP 全局默认设置。UIManager 的 `font` 只用于引用一致性验证，不会在运行时替换字体。
+
+UIManager 的统计、任务、提示、背包、诊断、战斗结果、血条和模态层均为 Inspector 中绑定的场景组件。8 个 Button 的 OnClick 已序列化，目标为场景 UIManager 上的公开命令；没有运行时创建 UI 或 AddListener。暂停和背包面板默认隐藏，选中对应对象并临时启用即可在编辑模式调整。
+
+地图由场景中的 SpriteRenderer 对象组成；可直接移动/换图。敌人的 SpriteRenderer、Animator 与 ActorView 都在场景内，修改其 Transform 可调整刷新位置。首波使用前 6 个槽位，后续波次依次启用备用槽位。场景内新增的 WhiteSquare.png 仅用于道路、标记与特效，不再运行时创建纹理。
+
 ## 动画
 
 `Animations/Hero.controller` 与 `Enemy.controller` 各有一个 `Speed` 1D Blend Tree（Idle / Run）。`ActorView` 使用缓存的参数哈希、0.12 秒参数阻尼和固定时间 CrossFade，切换到 Attack，再按玩法状态返回 Locomotion。方向使用 sprite flip，保持原素材的侧向画法。
@@ -61,7 +70,7 @@ flowchart LR
 
 ## 性能与 GC
 
-- 16 个敌人 View 和 48 个投射物/受击 FX 在启动时预热，容量耗尽会记录 Misses，拒绝生成，不在战斗热路径自动扩容。
+- 16 个敌人 View 和 48 个投射物/受击 FX 已序列化在场景中，启动时仅登记对象池，容量耗尽会记录 Misses，拒绝生成，不在战斗热路径自动扩容。
 - 战斗遍历固定数组，不使用 LINQ、每帧 Find、GetComponents、闭包、协程或 Instantiate/Destroy；死亡 View 归还池。
 - 控制器在波次边界按需复用/创建；保存和切换波次是允许分配的边界操作。
 - UI 是实际的 UGUI，模型变化时刷新；架构诊断每 0.25 秒更新。文本拼接、UGUI 内部重建和事件提示仍可能分配，**不宣称全项目 0 GC**。
@@ -79,7 +88,7 @@ flowchart LR
 本次通过 GitHub API 创建文件，未修改本地项目。完成了文本结构、程序集引用、Unity GUID/fileID 引用和目录范围检查。**当前执行环境无法启动 Unity，未声称已通过编译、EditMode 测试或实际试玩。** 请按下面的验收顺序验证：
 
 1. **Tools → BetterDesign → Validate Assets**：检查配置、场景入口、精灵引用、控制器 Blend Tree、攻击片段和旧回调隔离。
-2. **Window → General → Test Runner → EditMode → BetterDesign.Tests → Run All**：14 个测试覆盖事件订阅重入/解除、异常清理、池耗尽/重复归还/外来对象、状态锁与死亡、任务奖励幂等、补给与商店、无效快照、波次门禁、JSON 往返与损坏备份恢复。
+2. **Window → General → Test Runner → EditMode → BetterDesign.Tests → Run All**：16 个测试覆盖场景预置对象与 TMP 字体/按钮绑定、禁止运行时创建场景对象，以及事件订阅重入/解除、异常清理、池耗尽/重复归还/外来对象、状态锁与死亡、任务奖励幂等、补给与商店、无效快照、波次门禁、JSON 往返与损坏备份恢复。
 3. 打开场景 Play：无 Missing Script、无旧动画回调错误；移动、近战、法术、冲刺与受击均可观察。
 4. 完成任务、领两次奖励（第二次不增加金币）、购买/使用药水、清场后 N 进入下一波。
 5. F5 保存，移动/战斗/消费后 F9，确认位置、敌方 HP、药水、金币恢复且投射物清空。
