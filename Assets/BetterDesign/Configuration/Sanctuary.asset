@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84fba8f7ec68d0be6b886fb55cf7ce94, type: 3}
+  m_Name: Sanctuary
+  m_EditorClassIdentifier: 
+  moveSpeed: 4.2
+  enemySpeed: 1.4
+  meleeDamage: 25
+  spellDamage: 35
+  enemyDamage: 10
+  baseEnemyHealth: 50
+  melee:
+    kind: 0
+    windup: 0.18
+    duration: 0.48
+    cooldown: 0.55
+    movementScale: 0
+  bow:
+    kind: 1
+    windup: 0.18
+    duration: 0.48
+    cooldown: 0.55
+    movementScale: 0.65
+  magic:
+    kind: 2
+    windup: 0.18
+    duration: 0.48
+    cooldown: 1.2
+    movementScale: 0.65
+  enemy:
+    kind: 0
+    windup: 0.3
+    duration: 0.6
+    cooldown: 1.1
+    movementScale: 0

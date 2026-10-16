@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: BetterDesign Scenes
+  m_EditorClassIdentifier: 
+  m_GroupName: BetterDesign Scenes
+  m_Data:
+    m_SerializedData: []
+  m_GUID: aa8fbcf320e6f10408a84759add9f369
+  m_SerializeEntries:
+  - m_GUID: 9f43a06dc7e869fc611de6d7387d38be
+    m_Address: better-design/sanctuary
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 0057aa241aceec34d85c3252014e7a82, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 1b051553f78f0db40b882471e644c57a, type: 2}
+    - {fileID: 11400000, guid: 79941d524e10953438e75579f9dce4a6, type: 2}

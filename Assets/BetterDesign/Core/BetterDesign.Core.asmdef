@@ -1,0 +1,5 @@
+{
+  "name": "BetterDesign.Core",
+  "rootNamespace": "BetterDesign.Core",
+  "noEngineReferences": true
+}

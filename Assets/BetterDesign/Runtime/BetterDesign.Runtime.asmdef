@@ -1,0 +1,11 @@
+{
+  "name": "BetterDesign.Runtime",
+  "rootNamespace": "BetterDesign",
+  "references": [
+    "BetterDesign.Core",
+    "UnityEngine.UI",
+    "Unity.TextMeshPro",
+    "Unity.Addressables",
+    "Unity.ResourceManager"
+  ]
+}
