@@ -3,20 +3,6 @@ using UnityEngine;
 
 namespace BetterDesign
 {
-    public interface IPlayerInput
-    {
-        Vector2 Move { get; }
-        bool Attack { get; }
-        bool Dash { get; }
-        bool Spell { get; }
-    }
-    public sealed class KeyboardInput : IPlayerInput
-    {
-        public Vector2 Move { get { return new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized; } }
-        public bool Attack { get { return Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0); } }
-        public bool Dash { get { return Input.GetKeyDown(KeyCode.LeftShift); } }
-        public bool Spell { get { return Input.GetKeyDown(KeyCode.Q) || Input.GetMouseButtonDown(1); } }
-    }
     // Plain C# controller; scene scope supplies dependencies explicitly.
     public sealed class ActorController : IDamageable
     {
@@ -24,29 +10,31 @@ namespace BetterDesign
         readonly bool hero;
         readonly int id;
         readonly DemoSettings settings;
-        public readonly ActorStateMachine Machine = new ActorStateMachine();
+        public readonly ActorModel Model;
+        public ActorStateMachine Machine { get { return Model.Machine; } }
         public readonly ActorView View;
-        public int Health { get; private set; }
+        public int Health { get { return Model.Health; } }
         public bool IsAlive { get { return Health > 0; } }
-        public Vector2 Position { get { return View.transform.position; } }
-        public Vector2 Facing { get; private set; } = Vector2.right;
+        public Vector2 Position { get { return new Vector2(Model.X,Model.Y); } }
+        public Vector2 Facing { get { return new Vector2(Model.FacingX,Model.FacingY); } }
         float invulnerable, cooldown, spellCooldown, dashCooldown;
         bool resolved;
         public ActorController(DemoWorld world, ActorView view, bool hero, int id, int health, DemoSettings settings)
         {
-            this.world = world; View = view; this.hero = hero; this.id = id; Health = health; this.settings = settings;
+            this.world = world; View = view; this.hero = hero; this.id = id; this.settings = settings;
+            Model = hero ? world.Model.Player : new ActorModel();
         }
         public void Reset(int health, Vector2 position)
         {
-            Health = health; View.transform.position = position; Machine.Reset();
+            Model.Reset(health,position.x,position.y);
             invulnerable = cooldown = spellCooldown = dashCooldown = 0; resolved = false;
-            Facing = Vector2.right; View.OnRent();
+            View.OnRent(); View.Render(Model,Vector2.zero,0);
         }
         public void Tick(float dt, IPlayerInput input)
         {
             Machine.Tick(dt); invulnerable -= dt; cooldown -= dt; spellCooldown -= dt; dashCooldown -= dt;
             Vector2 movement = Vector2.zero;
-            if (!IsAlive) { View.Present(ActorState.Dead, movement, dt); return; }
+            if (!IsAlive) { View.Render(Model,movement,dt); return; }
             if (Machine.State == ActorState.Attack)
             {
                 if (!resolved && Machine.Elapsed >= (hero ? .18f : .30f))
@@ -70,7 +58,7 @@ namespace BetterDesign
             else
             {
                 movement = hero ? input.Move * settings.moveSpeed : EnemyMovement();
-                if (movement.sqrMagnitude > .01f) Facing = movement.normalized;
+                if (movement.sqrMagnitude > .01f) { Vector2 facing = movement.normalized; Model.Face(facing.x,facing.y); }
                 Machine.TryEnter(movement.sqrMagnitude > .01f ? ActorState.Move : ActorState.Idle);
                 bool attack = hero ? input.Attack : Vector2.Distance(Position, world.Hero.Position) < 1.1f && world.Hero.IsAlive;
                 if (attack && cooldown <= 0 && Machine.TryEnter(ActorState.Attack))
@@ -87,8 +75,8 @@ namespace BetterDesign
                 }
             }
             Vector2 next = world.Clamp(Position + movement * dt);
-            View.transform.position = next;
-            View.Present(Machine.State, movement, dt);
+            Model.MoveTo(next.x,next.y);
+            View.Render(Model,movement,dt);
         }
         Vector2 EnemyMovement()
         {
@@ -99,16 +87,14 @@ namespace BetterDesign
         public void ReceiveDamage(int amount)
         {
             if (!IsAlive || invulnerable > 0 || amount <= 0) return;
-            Health = Mathf.Max(0, Health - amount);
-            if (hero) world.Model.Damage(amount);
+            if (hero) world.Model.Damage(amount); else Model.Damage(amount);
             invulnerable = hero ? .65f : .12f;
             Machine.TryEnter(IsAlive ? ActorState.Hurt : ActorState.Dead);
             View.HitFlash();
-            world.Events.Combat.Publish(new CombatEvent(id, amount, !IsAlive));
             world.ShowHit(Position, !IsAlive ? Color.yellow : new Color(1,.4f,.2f));
-            if (!IsAlive && !hero) world.Model.EnemyKilled();
+            if (!IsAlive && !hero) world.EnemyDefeated(this,id);
+            world.Events.Combat.Publish(new CombatEvent(id, amount, !IsAlive));
             if (!IsAlive && hero) world.Events.Notice.Publish("You fell. Load checkpoint (F9) or start a new run.");
         }
-        public void SyncHealth(int health) { Health = health; }
     }
 }

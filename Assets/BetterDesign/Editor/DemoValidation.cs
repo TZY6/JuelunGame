@@ -1,4 +1,5 @@
 using System;
+using BetterDesign.Core;
 using System.Collections.Generic;
 using TMPro;
 using UnityEditor;
@@ -65,18 +66,31 @@ namespace BetterDesign.Editor
                 Require(actors == 17,"Expected authored hero + 16 enemy slots.");
                 Require(cameras == 1 && eventSystems == 1,"Expected authored Camera and EventSystem.");
                 Require(entry.WorldManager.mapRoot.childCount > 0,"Authored map missing.");
-                Require(legacyText == 0 && textComponents.Count == 21,"Expected 21 TMP labels and no legacy Text.");
+                Require(legacyText == 0 && textComponents.Count == 49,"Expected 49 TMP labels and no legacy Text.");
                 foreach (var label in textComponents)
                     Require(label.font == expectedFont,"Incorrect TMP font on "+label.name);
-                Require(buttons.Count == 8,"Expected 8 authored UI buttons.");
+                Require(buttons.Count == 22,"Expected 22 authored UI buttons.");
+                Require(entry.InputReader != null && entry.InventoryView != null && entry.InventoryView.IsConfigured,"InputReader / Inventory MVC view missing.");
+                var selectedIndices = new bool[InventoryModel.Capacity];
+                foreach (var button in buttons)
+                    if (button.onClick.GetPersistentMethodName(0) == "SelectSlot")
+                    {
+                        var serialized = new SerializedObject(button);
+                        var calls = serialized.FindProperty("m_OnClick").FindPropertyRelative("m_PersistentCalls.m_Calls");
+                        var call = calls.GetArrayElementAtIndex(0);
+                        int index = call.FindPropertyRelative("m_Arguments.m_IntArgument").intValue;
+                        Require(index >= 0 && index < selectedIndices.Length && !selectedIndices[index],"Inventory slot index is invalid or duplicated.");
+                        selectedIndices[index] = true;
+                    }
+                foreach (bool found in selectedIndices) Require(found,"Inventory slot button index is missing.");
                 foreach (var button in buttons)
                     Require(button.onClick.GetPersistentEventCount() == 1 &&
-                        button.onClick.GetPersistentTarget(0) == entry.UiManager &&
+                        (button.onClick.GetPersistentTarget(0) == entry.UiManager || button.onClick.GetPersistentTarget(0) == entry.InventoryView) &&
                         !string.IsNullOrEmpty(button.onClick.GetPersistentMethodName(0)),
-                        "Button requires a serialized UIManager command: "+button.name);
+                        "Button requires a serialized controller command: "+button.name);
             }
             finally { if (!alreadyLoaded) EditorSceneManager.CloseScene(scene,true); }
-            Debug.Log("BetterDesign: authored scene, 17 actors, 48 effect slots, 21 TMP labels, font and button wiring validated.");
+            Debug.Log("BetterDesign: authored scene, input bindings, 17 actors, 48 FX / 64 loot slots, 12 inventory slots, 49 TMP labels and 22 buttons validated.");
         }
         static void ValidateController(RuntimeAnimatorController controller)
         {

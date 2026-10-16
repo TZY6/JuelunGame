@@ -54,12 +54,12 @@ namespace BetterDesign
             {
                 dirty = false;
                 var model = world.Model;
-                stats.text = "生命 " + model.Hp + "/100     金币 " + model.Coins + "     药水 " + model.Potions + "     第 " + model.Wave + " 波";
+                stats.text = "生命 " + model.Hp + "/100     金币 " + model.Coins + "     补给 " + model.Potions + "     第 " + model.Wave + " 波";
                 health.rectTransform.anchorMax = new Vector2(model.Hp / 100f, 1);
                 quest.text = !model.QuestAccepted ? "前往青色信标 [E]\n接取守卫清理契约。" :
-                    model.QuestClaimed ? "契约已完成\n金币 +50 / 药水 +2\n继续挑战下一波。" :
-                     "已击败守卫：" + Mathf.Min(model.Kills,6) + "/6\n奖励：50 金币 + 2 瓶药水\n回到信标领取奖励 [E]。";
-                bagText.text = "金币：" + model.Coins + "\n治疗药水：" + model.Potions + "\n每瓶恢复 40 点生命。\n信标商店售价 [B]：10 金币。";
+                    model.QuestClaimed ? "契约已完成\n金币 +50 / 补给 +2\n继续挑战下一波。" :
+                     "已击败守卫：" + Mathf.Min(model.Kills,6) + "/6\n奖励：50 金币 + 2 瓶补给\n回到信标领取奖励 [E]。";
+                bagText.text = "金币：" + model.Coins + "    治疗补给：" + model.Potions + "    格子：" + model.Inventory.Occupied + "/12";
             }
             status.text = !world.Hero.IsAlive ? "挑战失败 / 按 F9 恢复检查点" : world.Model.WaveCleared ? "本波已清理 / 按 N 继续" : "";
             noticeTimer -= unscaledDt;
@@ -71,7 +71,7 @@ namespace BetterDesign
                 diagnostics.text =
                     "MODEL -> event -> HUD\nCOMMAND -> controller -> model\n\n" +
                     "Hero FSM: " + world.Hero.Machine.State + "\nTransitions: " + world.Hero.Machine.Transitions +
-                    "\nSentinels alive: " + world.LivingEnemies +
+                    "\nSentinels alive: " + world.LivingEnemies + "\n地面掉落：" + world.Loot.Active +
                     "\n\nPool active (actors + FX): " + world.PoolActive + "\nFX peak / capacity: " + world.PoolPeak + "/" + DemoWorld.EffectCapacity +
                     "\nPool misses: " + world.PoolMisses +
                     "\n\nModel events: " + world.Events.Model.Published + "\nCombat events: " + world.Events.Combat.Published +

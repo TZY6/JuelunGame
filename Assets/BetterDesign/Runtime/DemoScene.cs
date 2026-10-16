@@ -1,4 +1,5 @@
 using UnityEngine;
+using BetterDesign.Core;
 using UnityEngine.Profiling;
 
 namespace BetterDesign
@@ -12,38 +13,48 @@ namespace BetterDesign
         [SerializeField] PersistenceManager persistenceManager;
         [SerializeField] DemoHud uiManager;
         [SerializeField] Camera gameCamera;
+        [SerializeField] PlayerInputReader inputReader;
+        [SerializeField] InventoryView inventoryView;
+        InventoryController inventoryController;
         DemoWorld world;
         public DemoSettings Settings { get { return settings; } }
         public WorldSceneBindings WorldManager { get { return worldManager; } }
         public PersistenceManager Persistence { get { return persistenceManager; } }
         public DemoHud UiManager { get { return uiManager; } }
         public Camera GameCamera { get { return gameCamera; } }
+        public PlayerInputReader InputReader { get { return inputReader; } }
+        public InventoryView InventoryView { get { return inventoryView; } }
         void Awake()
         {
             if (settings == null || worldManager == null || !worldManager.IsConfigured ||
-                persistenceManager == null || uiManager == null || !uiManager.IsConfigured || gameCamera == null)
+                persistenceManager == null || uiManager == null || !uiManager.IsConfigured || gameCamera == null ||
+                inputReader == null || inventoryView == null || !inventoryView.IsConfigured)
             {
                 Debug.LogError("BetterDesign: assign all authored scene references on the managers.",this);
                 enabled = false; return;
             }
-            world = new DemoWorld(worldManager,settings,persistenceManager,new KeyboardInput());
+            world = new DemoWorld(worldManager,settings,persistenceManager,inputReader);
             uiManager.Bind(world);
+            inventoryController = new InventoryController(world.Model,world.Events,inventoryView,world);
+            inventoryView.Bind(inventoryController);
         }
         void Update()
         {
             if (world == null) return;
-            if (Input.GetKeyDown(KeyCode.F1)) uiManager.ToggleArchitecture();
-            if (Input.GetKeyDown(KeyCode.Escape)) uiManager.Back();
-            if (Input.GetKeyDown(KeyCode.Tab)) uiManager.ToggleBag();
-            if (Input.GetKeyDown(KeyCode.F5)) world.Save();
-            if (Input.GetKeyDown(KeyCode.F9)) { world.Load(); uiManager.CloseAll(); }
+            inputReader.Capture();
+            if (inputReader.ObserverPressed) uiManager.ToggleArchitecture();
+            if (inputReader.PausePressed) uiManager.Back();
+            if (inputReader.InventoryPressed) uiManager.ToggleBag();
+            if (inputReader.SavePressed) world.Save();
+            if (inputReader.LoadPressed) { world.Load(); uiManager.CloseAll(); }
             if (!uiManager.HasModal)
             {
-                if (Input.GetKeyDown(KeyCode.E)) world.Interact();
-                if (Input.GetKeyDown(KeyCode.B)) world.Buy();
-                if (Input.GetKeyDown(KeyCode.H)) world.Heal();
-                if (Input.GetKeyDown(KeyCode.N)) world.NextWave();
+                if (inputReader.InteractPressed) world.Interact();
+                if (inputReader.BuyPressed) world.Buy();
+                if (inputReader.HealPressed) world.Heal();
+                if (inputReader.NextWavePressed) world.NextWave();
             }
+            inputReader.SetGameplayBlocked(uiManager.HasModal || !Application.isFocused);
             Profiler.BeginSample("BetterDesign.World");
             try { world.Tick(Mathf.Min(Time.deltaTime,.05f)); }
             finally { Profiler.EndSample(); }
@@ -56,6 +67,7 @@ namespace BetterDesign
         }
         void OnDestroy()
         {
+            if (inventoryController != null) inventoryController.Dispose();
             if (uiManager != null) uiManager.Dispose();
             if (world != null) world.Dispose();
         }

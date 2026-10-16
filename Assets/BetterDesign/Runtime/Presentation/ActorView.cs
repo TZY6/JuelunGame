@@ -25,7 +25,12 @@ namespace BetterDesign
             normalColor = Renderer.color;
             lastState = ActorState.Idle;
         }
-        public void Present(ActorState state, Vector2 movement, float dt)
+        public void Render(ActorModel model,Vector2 movement,float dt)
+        {
+            transform.position = new Vector3(model.X,model.Y,0);
+            Present(model.Machine.State,movement,dt);
+        }
+        void Present(ActorState state, Vector2 movement, float dt)
         {
             if (movement.x != 0) Renderer.flipX = movement.x < 0;
             Renderer.sortingOrder = 100 - Mathf.RoundToInt(transform.position.y * 10);
@@ -49,6 +54,6 @@ namespace BetterDesign
             lastState = ActorState.Idle; flash = 0;
             if (Animation != null && Animation.runtimeAnimatorController != null) { Animation.speed = 1; Animation.Rebind(); Animation.Update(0); }
         }
-        public void OnReturn() { gameObject.SetActive(false); }
+        public void OnReturn() { if (this != null) gameObject.SetActive(false); }
     }
 }
