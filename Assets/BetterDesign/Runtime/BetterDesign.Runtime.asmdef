@@ -4,6 +4,8 @@
   "references": [
     "BetterDesign.Core",
     "UnityEngine.UI",
-    "Unity.TextMeshPro"
+    "Unity.TextMeshPro",
+    "Unity.Addressables",
+    "Unity.ResourceManager"
   ]
 }

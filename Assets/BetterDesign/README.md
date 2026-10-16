@@ -1,6 +1,10 @@
 # BetterDesign / Sanctuary
 
-Unity 2022.3.29f1。打开 `Assets/BetterDesign/Scenes/BetterDesignDemo.unity` 即可检查已配置的地图、玩家、敌人、管理器、对象池和完整 TMP UI。所有修改仅在 `Assets/BetterDesign/` 内，原资源只引用，不修改。代码通过 GitHub API 提交，本地项目未改动。
+Unity 2022.3.29f1。打开 `Assets/BetterDesign/Scenes/BetterDesignDemo.unity` 即可检查已配置的地图、玩家、敌人、管理器、对象池和完整 TMP UI。玩法、UI 与 Addressables 资源位于 `Assets/BetterDesign/`；经授权增加 Packages 依赖及 EditorBuildSettings 的 Addressables 配置引用，原资源只引用，不修改。代码通过 GitHub API 提交，本地项目未改动。
+
+## Addressables 场景入口
+
+新增 `Scenes/BetterDesignLauncher.unity`，通过 Addressables 加载原 Demo；游戏中点击顶部返回按钮或 F10 卸载并返回。使用 **Tools → BetterDesign → Addressables → Open Launcher** 打开，点击 Play 后进入。依赖安装、本地内容构建、真实 bundle 验证和生命周期见 [ADDRESSABLES.md](ADDRESSABLES.md)。原 Demo 仍可直接运行。
 
 ## 更新和运行
 
@@ -106,7 +110,7 @@ v3 额外保存场景身份、等级/经验/技能点、武器、法术阶数、
 已做场景文本、fileID/父子关系、输入/管理器字段、49 个字体引用、12 个格子索引及 22 个按钮目标方法检查。已使用 Unity 2022.3.29f1 在独立临时项目中执行编译与自动测试；未改变当前工作副本。具体结果及验证边界见 [VALIDATION.md](VALIDATION.md)。架构审查、依赖、生命周期、取舍及迁移顺序见 [ARCHITECTURE.md](ARCHITECTURE.md)。
 
 1. **Tools → BetterDesign → Validate Assets**：检查完整场景、输入组件、掉落池、背包、字体与按钮引用。
-2. **Window → General → Test Runner → EditMode → BetterDesign.Tests → Run All**：64 个测试覆盖模型、MVC 命令路由/订阅解除、堆叠/满包原子性、奖励容量门禁、拾取前不结算、旧档迁移、掉落保存与池容量、FSM、事件、JSON 往返/损坏恢复。
+2. **Window → General → Test Runner → EditMode → BetterDesign.Tests → Run All**：67 个测试覆盖模型、MVC 命令路由/订阅解除、堆叠/满包原子性、奖励容量门禁、拾取前不结算、旧档迁移、掉落保存与池容量、FSM、事件、JSON 往返/损坏恢复。
 3. 打开场景 Play，在 PlayerInput 组件中改一个按键，验证移动/近战/法术/冲刺与暂停门禁。
 4. 击败一个敌人，确认地面出现金币和补给/蘑菇；未靠近时金币不变，靠近后金币/格子更新。
 5. Tab 拖拽物品到空格/同类/异类格，检查移动/合并/交换；拖出或关闭不改数据。再选择、使用、丢弃并再次拾取、出售材料；满血使用不扣数量。

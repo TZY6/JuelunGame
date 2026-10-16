@@ -15,3 +15,14 @@
 测试输入通过 IPlayerInput/IAimedPlayerInput 驱动真实场景对象与玩法模块，不宣称完成操作系统层键鼠回放或人工试玩。没有提供未测量的 FPS/GC 提升数字；原 RPG1 的目录外缺陷与整体 Player 构建未在本轮改动。
 
 具体复现、修复和本地玩家验收路径见 [BATTLE_ACCEPTANCE.md](BATTLE_ACCEPTANCE.md)。架构审查和迁移边界见 [ARCHITECTURE.md](ARCHITECTURE.md)。
+
+## Addressables 场景加载
+基线 14d542122a408d654f53bb71beef8469bcfee839。经用户授权额外更新 Packages/manifest.json、Packages/packages-lock.json 与 ProjectSettings/EditorBuildSettings.asset 的配置引用；原 Build Settings 场景列表保留。
+- Unity 2022.3.29f1 安装 Addressables 1.21.21 / Scriptable Build Pipeline 1.21.23，Runtime、Editor、Tests 编译通过，Core 不增加 Addressables 依赖。
+- 完整 BetterDesign.Tests 回归 **67/67 通过**，原有 64 项战斗、朝向、拖拽、模型与存档测试继续通过。
+- 本地 catalog 与 AssetBundles 构建成功，输出为 Library/com.unity.addressables/aa/Windows/settings.json。
+- 默认 Use Asset Database 模式完成 AddressableSceneTests；切换 Use Existing Build 后再次执行 **3/3 通过**，真实 bundle 加载/卸载两轮、Active Scene、唯一 EventSystem、无效 key 失败重试、加载中 Dispose 清理均验证。
+- 启动场景实际 Unity 相机渲染检查了文字、按钮和进度条；六个 TMP 引用指定主字体，缺字回退工作正常。
+- 交付 Launcher 场景 blob 与验证文件一致：afc7333b06d1cde3dcf577a3feff4f2b75660e19。
+- 所有验证在独立临时项目执行，没有编辑用户工作副本。启动页作者工具和临时测试探针不交付；场景和组配置已直接序列化。
+本轮未执行完整原 RPG1 的 Player 构建、远程 CDN 或热更新验证。Windows Demo 菜单提供明确的打包入口，原项目目录外的脚本构建问题仍需独立处理。操作与生命周期说明见 ADDRESSABLES.md。

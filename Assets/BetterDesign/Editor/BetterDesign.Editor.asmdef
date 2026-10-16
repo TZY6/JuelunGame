@@ -5,7 +5,10 @@
     "BetterDesign.Core",
     "BetterDesign.Runtime",
     "UnityEngine.UI",
-    "Unity.TextMeshPro"
+    "Unity.TextMeshPro",
+    "Unity.Addressables",
+    "Unity.ResourceManager",
+    "Unity.Addressables.Editor"
   ],
   "includePlatforms": [
     "Editor"

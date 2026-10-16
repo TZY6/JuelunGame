@@ -111,3 +111,6 @@ FixedPool 提供 TryRent/Return/ReturnAll、初始可用容量、倍增到硬上
 ## 背包拖拽与朝向维护
 InventorySlotDrag 仅转发 UGUI 指针事件，InventoryView 管理拖拽表现与取消，InventoryController 发出 MoveSlot 命令，GameModel/InventoryModel 原子提交并发布 InventoryChanged。拖拽开始记录模型 Revision，期间数据变化则取消，避免对旧格子快照执行命令；无需引入独立全局拖拽管理器。固定 12 格使用已布置的图标，未增加运行时 UI 工厂。
 ActorController 决定业务面向；输入只在鼠标移动或攻击时提供主动瞄准，移动和静止鼠标不争夺面向。ActorView 在动画更新后的 LateUpdate 应用 flipX，模型仍是方向真值。代价是视图每帧一次布尔赋值；没有通过根对象负缩放影响子血条和瞄准指示。
+
+## 场景资源加载
+新增 Launcher 场景作为场景加载拥有者，SceneLauncher 只处理预置界面，AddressableSceneFlow 持有并释放场景句柄，DemoScene 继续管理游戏会话。采用 Additive 保留启动页，因此不需要全局单例或 DontDestroyOnLoad；加载后设置 Active Scene，返回先恢复启动场景再卸载玩法。加载期间销毁拥有者不能中断 Unity 的底层加载，但完成后会清理场景。代价是常驻启动 UI 与 Addressables 内容构建步骤。当前本地资源包；远程分发需要后续确定 hosting、catalog、版本与失败策略。详见 ADDRESSABLES.md。
