@@ -6,7 +6,7 @@ Unity 2022.3.29f1。打开 `Assets/BetterDesign/Scenes/BetterDesignDemo.unity` �
 
 检出 `codex/better-design-sanctuary` 分支后 `git pull --ff-only`，等待 Unity 编译。打开上述场景，点击 Play，然后点击 Game 视图取得输入焦点。无需运行生成器，也无需更改 Build Settings。
 
-场景里有 **576 个预置 GameObject**：玩家、16 个敌人槽位（首波 6 个启用）、48 个特效槽位、64 个掉落物槽位、地图、相机、EventSystem、输入与其他管理器、12 个背包格子。Play 时不创建 GameObject、组件或纹理，后续波次、投射物和掉落复用已有对象。
+场景里有 **628 个预置 GameObject**：玩家、16 个敌人槽位（首波 6 个启用）、48 个特效槽位、64 个掉落物槽位、地图、相机、EventSystem、输入与其他管理器、12 个背包格子。玩法与面板不通过运行时代码搭建；后续波次、投射物和掉落复用已有对象。TMP 会正常创建用于字体回退的内部渲染子网格。
 
 ## 玩家输入在哪里
 
@@ -17,9 +17,9 @@ Unity 2022.3.29f1。打开 `Assets/BetterDesign/Scenes/BetterDesignDemo.unity` �
 | 默认输入 | 行为 |
 | --- | --- |
 | WASD / 方向键 | 移动，斜向速度归一化 |
-| Space / 左键 | 当前武器攻击：剑为扇区近战，弓可移动射击 |
+| 按住 Space / 左键 | 连续当前武器攻击；鼠标瞄准，弓可移动射击 |
 | R / K | 切换剑与弓 / 消耗技能点升级法术 |
-| Q / 右键 | 投射物法术 |
+| 按住 Q / 右键 | 按冷却连续施放法术 |
 | Left Shift | 冲刺、短暂无敌、冷却 |
 | E / B | 信标契约交互 / 花 10 金币购买补给 |
 | H | 使用治疗补给，恢复 40 HP |
@@ -83,7 +83,7 @@ flowchart LR
 - `UI - Canvas / UIManager`：HUD、任务、观察面板、模态遮罩、背包和暂停面板。
 - 背包面板上挂 `InventoryView`，12 组名字/数量/图标/背景均已绑定；按钮 OnClick 也已序列化，包括各格的整数索引。
 
-**49 个 TextMeshProUGUI 全部直接引用 `Assets/Fonts/7000msyhbdallicon SDF.asset`**（GUID `563ebed8c882c5e458174c07361ae986`），不改 TMP 全局配置和原字体文件。场景有 22 个按钮，不使用运行时 AddListener。默认隐藏的背包/暂停面板可以在编辑模式临时启用，调整布局后恢复隐藏。
+**49 个 TextMeshProUGUI 全部直接引用 `Assets/Fonts/7000msyhbdallicon SDF.asset`**（GUID `563ebed8c882c5e458174c07361ae986`），不改 TMP 全局配置和原字体文件。原 7000 字库缺少数字/英文及部分常用字，SceneFontFallback 使用现有 3500 字库和 LiberationSans 补齐缺字，主字体引用保持原资源。场景有 22 个按钮，不使用运行时 AddListener。默认隐藏的背包/暂停面板可以在编辑模式临时启用，调整布局后恢复隐藏。
 
 ## 动画、对象池与性能
 
@@ -102,7 +102,7 @@ v3 额外保存场景身份、等级/经验/技能点、武器、法术阶数、
 已做场景文本、fileID/父子关系、输入/管理器字段、49 个字体引用、12 个格子索引及 22 个按钮目标方法检查。已使用 Unity 2022.3.29f1 在独立临时项目中执行编译与自动测试；未改变当前工作副本。具体结果及验证边界见 [VALIDATION.md](VALIDATION.md)。架构审查、依赖、生命周期、取舍及迁移顺序见 [ARCHITECTURE.md](ARCHITECTURE.md)。
 
 1. **Tools → BetterDesign → Validate Assets**：检查完整场景、输入组件、掉落池、背包、字体与按钮引用。
-2. **Window → General → Test Runner → EditMode → BetterDesign.Tests → Run All**：42 个测试覆盖模型、MVC 命令路由/订阅解除、堆叠/满包原子性、奖励容量门禁、拾取前不结算、旧档迁移、掉落保存与池容量、FSM、事件、JSON 往返/损坏恢复。
+2. **Window → General → Test Runner → EditMode → BetterDesign.Tests → Run All**：54 个测试覆盖模型、MVC 命令路由/订阅解除、堆叠/满包原子性、奖励容量门禁、拾取前不结算、旧档迁移、掉落保存与池容量、FSM、事件、JSON 往返/损坏恢复。
 3. 打开场景 Play，在 PlayerInput 组件中改一个按键，验证移动/近战/法术/冲刺与暂停门禁。
 4. 击败一个敌人，确认地面出现金币和补给/蘑菇；未靠近时金币不变，靠近后金币/格子更新。
 5. Tab 选择物品、使用、丢弃并再次拾取、出售材料；满血使用不扣数量。
@@ -113,3 +113,5 @@ v3 额外保存场景身份、等级/经验/技能点、武器、法术阶数、
 ## 扩展边界
 
 当前新增等级成长、剑弓切换、法术升级及持久化；仍未迁移原 RPG1 的全部内容。目前是二维平面、矩形边界与扇区/距离命中的架构 demo，不含障碍寻路、复杂物理碰撞、联网、触屏、拖拽交换格子、完整装备/技能树界面或制作系统。背包支持选中与按钮操作，未实现拖拽。扩展通过 IPlayerInput、IDamageable、IInventoryView、IInventoryActions 和 ISaveStore 接入。
+
+本轮对战修复、真实复现原因、整波回归与玩家复验路径见 [BATTLE_ACCEPTANCE.md](BATTLE_ACCEPTANCE.md)。战斗附有血条、方向提示、受击反馈及独立弓手动画；F1 架构面板默认隐藏。

@@ -59,6 +59,24 @@ namespace BetterDesign
             return new Vector2(Mathf.Clamp(p.x,bindings.minimum.x,bindings.maximum.x),
                 Mathf.Clamp(p.y,bindings.minimum.y,bindings.maximum.y));
         }
+        public Vector2 EnemyMovement(ActorController source)
+        {
+            if (!Hero.IsAlive) return Vector2.zero;
+            Vector2 delta = Hero.Position-source.Position;
+            Vector2 velocity = delta.sqrMagnitude > 1.05f*1.05f ? delta.normalized : Vector2.zero;
+            for (int i = 0; i < enemyCount; i++)
+            {
+                var other = Enemies[i];
+                if (other == source || !other.IsAlive) continue;
+                Vector2 away = source.Position-other.Position;
+                float distance = away.magnitude;
+                if (distance >= .85f) continue;
+                if (distance < .001f) away = i%2 == 0 ? Vector2.up : Vector2.down;
+                else away /= distance;
+                velocity += away*(1-distance/.85f)*1.6f;
+            }
+            return Vector2.ClampMagnitude(velocity,1)*Settings.enemySpeed;
+        }
         public void Tick(float dt)
         {
             if (Paused) return;

@@ -16,7 +16,7 @@ namespace BetterDesign
             readonly Color color;
             public Effect(SpriteRenderer sprite) { Sprite = sprite; scale = sprite.transform.localScale; color = sprite.color; }
             public void OnRent() { Sprite.gameObject.SetActive(true); Life = .25f; Velocity = Vector2.zero; Projectile = false; Damage = 0; }
-            public void OnReturn() { Life = 0; Velocity = Vector2.zero; Projectile = false; Damage = 0; Sprite.color = color; Sprite.transform.localScale = scale; Sprite.gameObject.SetActive(false); }
+            public void OnReturn() { Life = 0; Velocity = Vector2.zero; Projectile = false; Damage = 0; Sprite.color = color; Sprite.transform.localScale = scale; Sprite.transform.localRotation = Quaternion.identity; Sprite.gameObject.SetActive(false); }
         }
 
         readonly FixedPool<Effect> effectPool;
@@ -38,11 +38,22 @@ namespace BetterDesign
                 var effect = effectPool[i];
                 if (!effect.IsRented) continue;
                 effect.Life -= dt;
-                effect.Sprite.transform.position += (Vector3)(effect.Velocity * dt);
+                Vector2 previous = effect.Sprite.transform.position;
+                Vector2 next = previous + effect.Velocity*dt;
+                effect.Sprite.transform.position = next;
                 if (effect.Projectile)
+                {
+                    ActorController target = null; float nearest = float.MaxValue;
+                    Vector2 segment = next-previous;
                     for (int j = 0; j < count; j++)
-                        if (enemies[j].IsAlive && (enemies[j].Position - (Vector2)effect.Sprite.transform.position).sqrMagnitude < .45f)
-                        { enemies[j].ReceiveDamage(effect.Damage); effect.Life = 0; break; }
+                    {
+                        if (!enemies[j].IsAlive) continue;
+                        float t = segment.sqrMagnitude > 0 ? Mathf.Clamp01(Vector2.Dot(enemies[j].Position-previous,segment)/segment.sqrMagnitude) : 0;
+                        if ((enemies[j].Position-(previous+segment*t)).sqrMagnitude > .36f || t >= nearest) continue;
+                        nearest = t; target = enemies[j];
+                    }
+                    if (target != null) { target.ReceiveDamage(effect.Damage); effect.Life = 0; }
+                }
                 if (effect.Life <= 0) effectPool.Return(effect);
             }
 
@@ -64,8 +75,9 @@ namespace BetterDesign
             Effect effect;
             if (!effectPool.TryRent(out effect)) return false;
             effect.Projectile = true; effect.Damage = damage; effect.Life = 1.5f; effect.Velocity = direction * 9;
-            effect.Sprite.transform.position = position + direction * .6f;
-            effect.Sprite.transform.localScale = new Vector3(.3f,.3f,1);
+            effect.Sprite.transform.position = position + direction * .2f;
+            effect.Sprite.transform.localScale = arrow ? new Vector3(.5f,.10f,1) : new Vector3(.26f,.26f,1);
+            effect.Sprite.transform.rotation = Quaternion.Euler(0,0,Mathf.Atan2(direction.y,direction.x)*Mathf.Rad2Deg);
             effect.Sprite.color = arrow ? new Color(1,.85f,.4f) : new Color(.4f,.95f,1);
             return true;
         }

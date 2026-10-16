@@ -25,6 +25,7 @@ namespace BetterDesign.Core
         {
             if (next == State || State == ActorState.Dead) return false;
             if (next == ActorState.Dead) return true;
+            if (next == ActorState.Dash && State != ActorState.Interact) return State != ActorState.Hurt || Elapsed >= .1f;
             if (next == ActorState.Hurt) return State != ActorState.Dash;
             return !Locked;
         }

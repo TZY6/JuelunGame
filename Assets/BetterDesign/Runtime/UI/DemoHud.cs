@@ -3,6 +3,7 @@ using BetterDesign.Core;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 namespace BetterDesign
 {
@@ -10,6 +11,8 @@ namespace BetterDesign
     public sealed class DemoHud : MonoBehaviour, IDisposable
     {
         DemoWorld world;
+        [SerializeField] EventSystem uiEventSystem;
+        public EventSystem UiEventSystem { get { return uiEventSystem; } }
         IDisposable modelSubscription, noticeSubscription, combatSubscription;
         readonly PanelStack stack = new PanelStack();
         [SerializeField] TMP_FontAsset font;
@@ -26,7 +29,7 @@ namespace BetterDesign
         {
             get { return font != null && stats != null && quest != null && notice != null && bagText != null &&
                 diagnostics != null && status != null && bag != null && pause != null && architecture != null &&
-                health != null && modalLayer != null; }
+                health != null && modalLayer != null && uiEventSystem != null; }
         }
         public void Bind(DemoWorld world)
         {
@@ -55,7 +58,7 @@ namespace BetterDesign
             {
                 dirty = false;
                 var model = world.Model;
-                stats.text = "生命 " + model.Hp + "/100     金币 " + model.Coins + "     补给 " + model.Potions + "     Lv." + model.Progression.Level + " XP " + model.Progression.Experience + "/" + model.Progression.RequiredExperience + " 法术" + model.Progression.MagicRank + "阶/" + model.Progression.SkillPoints + "点 " + (model.Progression.Weapon == 0 ? "剑" : "弓") + " 第 " + model.Wave + " 波";
+                stats.text = "生命 " + model.Hp + "/100  金币 " + model.Coins + "  补给 " + model.Potions + "  Lv." + model.Progression.Level + " 经验 " + model.Progression.Experience + "/" + model.Progression.RequiredExperience + "  " + (model.Progression.Weapon == 0 ? "剑" : "弓") + "  法术" + model.Progression.MagicRank + "阶 技能点" + model.Progression.SkillPoints + "  第" + model.Wave + "波";
                 
                 quest.text = !model.QuestAccepted ? "前往青色信标 [E]\n接取守卫清理契约。" :
                     model.QuestClaimed ? "契约已完成\n金币 +50 / 补给 +2\n继续挑战下一波。" :
@@ -91,6 +94,7 @@ namespace BetterDesign
         void SyncPause()
         {
             modalLayer.SetActive(stack.IsOpen);
+            if (uiEventSystem != null) uiEventSystem.SetSelectedGameObject(null);
             if (world != null && world.Paused != stack.IsOpen) world.TogglePause();
         }
         void OnDisable() { if (world != null) CloseAll(); Unsubscribe(); }

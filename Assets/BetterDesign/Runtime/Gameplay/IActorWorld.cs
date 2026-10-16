@@ -8,6 +8,7 @@ namespace BetterDesign
         GameEvents Events { get; }
         ActorController Hero { get; }
         Vector2 Clamp(Vector2 position);
+        Vector2 EnemyMovement(ActorController source);
         void Melee(ActorController source,int damage);
         bool Fire(Vector2 position,Vector2 direction,int damage,bool arrow);
         void ShowHit(Vector2 position,Color color);

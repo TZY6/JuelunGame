@@ -23,6 +23,7 @@ namespace BetterDesign.Editor
             repaired |= Check("Runtime/Input/PlayerInputReader.cs",typeof(PlayerInputReader));
             repaired |= Check("Runtime/Presentation/ActorView.cs",typeof(ActorView));
             repaired |= Check("Runtime/Presentation/LootView.cs",typeof(LootView));
+            repaired |= Check("Runtime/UI/SceneFontFallback.cs",typeof(SceneFontFallback));
             repaired |= Check("Runtime/UI/DemoHud.cs",typeof(DemoHud));
             repaired |= Check("Runtime/UI/InventoryView.cs",typeof(InventoryView));
             if (repaired) AssetDatabase.ImportAsset("Assets/BetterDesign/Configuration/Sanctuary.asset",ImportAssetOptions.ForceUpdate|ImportAssetOptions.ForceSynchronousImport);

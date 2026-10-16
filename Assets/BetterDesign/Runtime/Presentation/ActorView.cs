@@ -10,6 +10,11 @@ namespace BetterDesign
         public bool IsRented { get; set; }
         [SerializeField] SpriteRenderer spriteRenderer;
         [SerializeField] Animator animator;
+        [SerializeField] RuntimeAnimatorController bowController;
+        RuntimeAnimatorController defaultController;
+        public RuntimeAnimatorController BowController { get { return bowController; } }
+        [SerializeField] SpriteRenderer healthBackground,healthFill,actionIndicator,aimIndicator;
+        public bool HasCombatReferences { get { return healthBackground != null && healthFill != null && actionIndicator != null; } }
         public SpriteRenderer Renderer { get { return spriteRenderer; } }
         public Animator Animation { get { return animator; } }
         static readonly int Speed = UnityEngine.Animator.StringToHash("Speed");
@@ -25,18 +30,38 @@ namespace BetterDesign
         public void Initialize()
         {
             if (!HasSceneReferences) throw new System.InvalidOperationException(name + ": actor scene references missing.");
+            defaultController = animator.runtimeAnimatorController;
             normalColor = Renderer.color; originalScale = transform.localScale;
             originalFlip = Renderer.flipX; originalSorting = Renderer.sortingOrder;
             lastState = ActorState.Idle;
         }
-        public void Render(ActorModel model,Vector2 movement,float dt)
+        public void Render(ActorModel model,Vector2 movement,float dt,int maximumHealth = 100)
         {
             transform.position = new Vector3(model.X,model.Y,0);
+            if (Mathf.Abs(model.FacingX) > .01f) Renderer.flipX = model.FacingX < 0;
             Present(model.Machine.State,movement,dt);
+            if (!HasCombatReferences) return;
+            bool alive = model.Health > 0;
+            healthBackground.enabled = healthFill.enabled = alive;
+            float ratio = Mathf.Clamp01(model.Health/(float)Mathf.Max(1,maximumHealth));
+            healthFill.transform.localScale = new Vector3(.9f*ratio,.075f,1);
+            healthFill.transform.localPosition = new Vector3(-.45f+.45f*ratio,.82f,0);
+            healthFill.color = ratio > .35f ? new Color(.3f,.95f,.55f) : new Color(1,.3f,.2f);
+            Vector3 direction = new Vector3(model.FacingX,model.FacingY,0);
+            float angle = Mathf.Atan2(direction.y,direction.x)*Mathf.Rad2Deg;
+            actionIndicator.enabled = alive && (model.Machine.State == ActorState.Attack || model.Machine.State == ActorState.Skill);
+            actionIndicator.transform.localPosition = direction*.9f;
+            actionIndicator.transform.localRotation = Quaternion.Euler(0,0,angle);
+            actionIndicator.color = model.Machine.State == ActorState.Skill ? new Color(.65f,.4f,1,.85f) : new Color(1,.65f,.2f,.85f);
+            if (aimIndicator != null)
+            {
+                aimIndicator.enabled = alive;
+                aimIndicator.transform.localPosition = direction*1.05f;
+                aimIndicator.transform.localRotation = Quaternion.Euler(0,0,angle);
+            }
         }
         void Present(ActorState state, Vector2 movement, float dt)
         {
-            if (movement.x != 0) Renderer.flipX = movement.x < 0;
             Renderer.sortingOrder = 100 - Mathf.RoundToInt(transform.position.y * 10);
             if (Animation.runtimeAnimatorController != null)
             {
@@ -48,8 +73,15 @@ namespace BetterDesign
                 }
             }
             flash = Mathf.Max(0, flash - dt);
-            Renderer.color = flash > 0 ? Color.white : state == ActorState.Dead ? new Color(.4f, .4f, .4f, .5f) : normalColor;
+            Renderer.color = flash > 0 ? new Color(1,.15f,.15f,1) : state == ActorState.Dead ? new Color(.4f, .4f, .4f, .5f) : normalColor;
             lastState = state;
+        }
+        public void SetWeapon(bool bow)
+        {
+            var controller = bow && bowController != null ? bowController : defaultController;
+            if (Animation.runtimeAnimatorController == controller) return;
+            Animation.runtimeAnimatorController = controller; lastState = ActorState.Idle;
+            Animation.Rebind(); Animation.Update(0);
         }
         public void HitFlash() { flash = .1f; }
         public void OnRent()

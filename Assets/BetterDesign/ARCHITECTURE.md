@@ -104,3 +104,6 @@ FixedPool 提供 TryRent/Return/ReturnAll、初始可用容量、倍增到硬上
 
 ### 首次导入兼容
 在 Unity 2022.3.29f1 的独立验证项目中发现首次导入可能缓存 MonoScript.GetClass() 为空，尽管程序集已编译。DemoImportRepair 在编译完成后核对 9 个序列化脚本的类型绑定，仅对不匹配的脚本强制重导入，不重建 GameObject、不改 GUID、不覆盖场景。Validate Assets 同样执行此检查；必要时可手动运行 Tools/BetterDesign/Repair Script Imports。该检查解决导入缓存，不用于掩盖编译错误或丢失的资源。
+
+## 对战修复后的补充
+玩家鼠标瞄准通过 IAimedPlayerInput 独立于移动输入；连续攻击/法术配合 180 ms 缓冲，闪避可取消未结算动作。投射物采用线段扫掠，敌人使用有限邻居分离。ActorView 的血条、攻击/瞄准指示与弓手 Animator 均来自场景序列化引用。输入和 HUD 引用本场景 EventSystem，模态关闭清理选择，避免原 Submit/空格冲突。SceneFontFallback 通过可释放的 TMP 字体请求回调和文本预处理补齐主字体缺字，不修改共享字体资产的配置；所有字体资源仍为静态配置。详见 BATTLE_ACCEPTANCE.md。

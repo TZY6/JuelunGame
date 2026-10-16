@@ -29,7 +29,7 @@ namespace BetterDesign.Editor
             Require(config != null && config.IsValid,"Configuration asset missing or invalid.");
             var expectedFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/7000msyhbdallicon SDF.asset");
             Require(expectedFont != null,"Requested TMP font asset missing.");
-            foreach (string path in new[] { "Animations/HeroAttack.anim", "Animations/EnemyAttack.anim" })
+            foreach (string path in new[] { "Animations/HeroAttack.anim", "Animations/EnemyAttack.anim", "Animations/BowShoot.anim" })
             {
                 var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(Root+path);
                 Require(clip != null && AnimationUtility.GetAnimationEvents(clip).Length == 0,"Attack clip contains legacy callbacks.");
@@ -62,8 +62,16 @@ namespace BetterDesign.Editor
                 Require(entry.Settings == config && entry.Persistence != null && entry.GameCamera != null,"GameManager references missing.");
                 Require(entry.WorldManager != null && entry.WorldManager.IsConfigured,"WorldManager scene bindings missing/duplicated.");
                 ValidateController(entry.WorldManager.hero.Animation.runtimeAnimatorController);
-                foreach (var actor in entry.WorldManager.enemySlots) ValidateController(actor.Animation.runtimeAnimatorController);
+                ValidateController(entry.WorldManager.hero.BowController);
+                Require(entry.WorldManager.hero.HasCombatReferences,"Hero combat feedback references missing.");
+                foreach (var actor in entry.WorldManager.enemySlots) { ValidateController(actor.Animation.runtimeAnimatorController); Require(actor.HasCombatReferences,"Enemy combat feedback references missing."); }
                 Require(entry.UiManager != null && entry.UiManager.IsConfigured && entry.UiManager.Font == expectedFont,"UIManager references missing.");
+                var fonts = entry.UiManager.GetComponent<SceneFontFallback>();
+                Require(fonts != null && fonts.IsConfigured,"Scene font fallback references missing.");
+                foreach (var label in textComponents)
+                    foreach (char character in label.text) Require(fonts.Supports(character),"Missing UI glyph: " + character);
+                Require(entry.InputReader.UiEventSystem == entry.UiManager.UiEventSystem && entry.UiManager.UiEventSystem != null,"Scene input/UI EventSystem references missing.");
+                Require(entry.InputReader.AimCamera == entry.GameCamera,"Aim camera binding missing.");
                 Require(actors == 17,"Expected authored hero + 16 enemy slots.");
                 Require(cameras == 1 && eventSystems == 1,"Expected authored Camera and EventSystem.");
                 Require(entry.WorldManager.mapRoot.childCount > 0,"Authored map missing.");

@@ -5,8 +5,17 @@ namespace BetterDesign
 {
     // Scene component: bindings visible in Inspector. Sample exactly once in GameManager.Update.
     [DisallowMultipleComponent]
-    public sealed class PlayerInputReader : MonoBehaviour, IPlayerInput
+    public sealed class PlayerInputReader : MonoBehaviour, IPlayerInput, IAimedPlayerInput
     {
+        [SerializeField] Camera aimCamera;
+        [SerializeField] EventSystem uiEventSystem;
+        public EventSystem UiEventSystem { get { return uiEventSystem; } }
+        public Camera AimCamera { get { return aimCamera; } }
+        public void SetAimCamera(Camera value) { aimCamera = value; }
+        Vector2 aimPoint;
+        bool hasAim;
+        public bool HasAim { get { return !blocked && hasAim; } }
+        public Vector2 AimPoint { get { return aimPoint; } }
         [Header("Movement")]
         public KeyCode up = KeyCode.W, down = KeyCode.S, left = KeyCode.A, right = KeyCode.D;
         public bool allowArrowKeys = true;
@@ -43,9 +52,11 @@ namespace BetterDesign
             bool west = Input.GetKey(left) || (allowArrowKeys && Input.GetKey(KeyCode.LeftArrow));
             bool east = Input.GetKey(right) || (allowArrowKeys && Input.GetKey(KeyCode.RightArrow));
             movement = new Vector2((east ? 1 : 0) - (west ? 1 : 0),(north ? 1 : 0) - (south ? 1 : 0)).normalized;
-            bool overUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
-            attackPressed = Input.GetKeyDown(attack) || (allowMouseButtons && !overUI && Input.GetMouseButtonDown(0));
-            spellPressed = Input.GetKeyDown(spell) || (allowMouseButtons && !overUI && Input.GetMouseButtonDown(1));
+            bool overUI = uiEventSystem != null && uiEventSystem.IsPointerOverGameObject();
+            hasAim = allowMouseButtons && !overUI && aimCamera != null && aimCamera.pixelRect.Contains(Input.mousePosition);
+            if (hasAim) aimPoint = aimCamera.ScreenToWorldPoint(Input.mousePosition);
+            attackPressed = Input.GetKey(attack) || (allowMouseButtons && !overUI && Input.GetMouseButton(0));
+            spellPressed = Input.GetKey(spell) || (allowMouseButtons && !overUI && Input.GetMouseButton(1));
             dashPressed = Input.GetKeyDown(dash);
             SwitchWeaponPressed = Input.GetKeyDown(switchWeapon);
             UpgradeSkillPressed = Input.GetKeyDown(upgradeSkill);

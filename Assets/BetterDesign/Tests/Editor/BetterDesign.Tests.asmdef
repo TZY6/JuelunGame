@@ -3,7 +3,9 @@
   "references": [
     "BetterDesign.Core",
     "BetterDesign.Runtime",
-    "BetterDesign.Editor"
+    "BetterDesign.Editor",
+    "Unity.TextMeshPro",
+    "UnityEngine.UI"
   ],
   "includePlatforms": [
     "Editor"

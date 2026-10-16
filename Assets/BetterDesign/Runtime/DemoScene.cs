@@ -33,6 +33,7 @@ namespace BetterDesign
                 Debug.LogError("BetterDesign: assign all authored scene references on the managers.",this);
                 enabled = false; return;
             }
+            inputReader.SetAimCamera(gameCamera);
             world = new DemoWorld(worldManager,settings,persistenceManager,inputReader);
             uiManager.Bind(world);
             inventoryController = new InventoryController(world.Model,world.Events,inventoryView,world);
@@ -50,7 +51,7 @@ namespace BetterDesign
             if (!uiManager.HasModal)
             {
                 if (inputReader.UpgradeSkillPressed) world.Events.Notice.Publish(world.Model.UpgradeMagic() ? "法术升级，伤害 +5。" : "需要 2 级和技能点，最高 3 阶。");
-                if (inputReader.SwitchWeaponPressed) world.Model.EquipWeapon(1-world.Model.Progression.Weapon);
+                if (inputReader.SwitchWeaponPressed && !world.Hero.Machine.Locked) world.Model.EquipWeapon(1-world.Model.Progression.Weapon);
                 if (inputReader.InteractPressed) world.Interact();
                 if (inputReader.BuyPressed) world.Buy();
                 if (inputReader.HealPressed) world.Heal();
