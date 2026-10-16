@@ -25,6 +25,7 @@ namespace BetterDesign.Core
     public sealed class InventoryModel
     {
         public const int Capacity = 12;
+        public int Revision { get; private set; }
         readonly ItemStack[] slots = new ItemStack[Capacity];
         public ItemStack this[int index] { get { return slots[index]; } }
         public int Occupied { get { int n = 0; for (int i = 0; i < Capacity; i++) if (slots[i].amount > 0) n++; return n; } }
@@ -53,14 +54,14 @@ namespace BetterDesign.Core
                         int take = Math.Min(amount,limit - slots[i].amount);
                         slots[i].item = item; slots[i].amount += take; amount -= take;
                     }
-            return true;
+            Revision++; return true;
         }
         public bool TryRemove(int index,int amount)
         {
             if (index < 0 || index >= Capacity || amount <= 0 || slots[index].amount < amount) return false;
             slots[index].amount -= amount;
             if (slots[index].amount == 0) slots[index].item = ItemId.None;
-            return true;
+            Revision++; return true;
         }
         public ItemStack[] Capture() { return (ItemStack[])slots.Clone(); }
         public static bool IsValid(ItemStack[] data)
@@ -74,7 +75,7 @@ namespace BetterDesign.Core
         public void Restore(ItemStack[] data)
         {
             if (!IsValid(data)) throw new ArgumentException("Invalid inventory snapshot.");
-            Array.Copy(data,slots,Capacity);
+            Array.Copy(data,slots,Capacity); Revision++;
         }
     }
 }

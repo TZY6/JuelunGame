@@ -6,7 +6,7 @@ namespace BetterDesign
     // Plain C# controller; scene scope supplies dependencies explicitly.
     public sealed class ActorController : IDamageable
     {
-        readonly DemoWorld world;
+        readonly IActorWorld world;
         readonly bool hero;
         readonly int id;
         readonly DemoSettings settings;
@@ -19,15 +19,18 @@ namespace BetterDesign
         public Vector2 Facing { get { return new Vector2(Model.FacingX,Model.FacingY); } }
         float invulnerable, cooldown, spellCooldown, dashCooldown;
         bool resolved;
-        public ActorController(DemoWorld world, ActorView view, bool hero, int id, int health, DemoSettings settings)
+        AttackDefinition attack;
+        readonly AttackExecutor attacks;
+        public bool TryInteract() { return IsAlive && Machine.TryEnter(ActorState.Interact); }
+        public ActorController(IActorWorld world, ActorView view, bool hero, int id, int health, DemoSettings settings)
         {
-            this.world = world; View = view; this.hero = hero; this.id = id; this.settings = settings;
+            this.world = world; attacks = new AttackExecutor(world,settings); View = view; this.hero = hero; this.id = id; this.settings = settings;
             Model = hero ? world.Model.Player : new ActorModel();
         }
         public void Reset(int health, Vector2 position)
         {
             Model.Reset(health,position.x,position.y);
-            invulnerable = cooldown = spellCooldown = dashCooldown = 0; resolved = false;
+            invulnerable = cooldown = spellCooldown = dashCooldown = 0; resolved = false; attack = null;
             View.OnRent(); View.Render(Model,Vector2.zero,0);
         }
         public void Tick(float dt, IPlayerInput input)
@@ -35,16 +38,23 @@ namespace BetterDesign
             Machine.Tick(dt); invulnerable -= dt; cooldown -= dt; spellCooldown -= dt; dashCooldown -= dt;
             Vector2 movement = Vector2.zero;
             if (!IsAlive) { View.Render(Model,movement,dt); return; }
-            if (Machine.State == ActorState.Attack)
+            if (Machine.State == ActorState.Attack || Machine.State == ActorState.Skill)
             {
-                if (!resolved && Machine.Elapsed >= (hero ? .18f : .30f))
+                if (attack == null) { Machine.Complete(); }
+                else
                 {
-                    resolved = true;
-                    if (hero) world.Melee(this, settings.meleeDamage);
-                    else if (world.Hero.IsAlive && Vector2.Distance(Position, world.Hero.Position) < 1.35f)
-                        world.Hero.ReceiveDamage(settings.enemyDamage);
+                    if (!resolved && Machine.Elapsed >= attack.windup)
+                    {
+                        resolved = true;
+                        if (!attacks.Execute(this,attack,hero) && hero) world.Events.Notice.Publish("投射物池已满，本次攻击取消。");
+                    }
+                    if (hero) movement = input.Move * settings.moveSpeed * attack.movementScale;
+                    if (Machine.Elapsed >= attack.duration) Machine.Complete();
                 }
-                if (Machine.Elapsed >= (hero ? .48f : .60f)) Machine.Complete();
+            }
+            else if (Machine.State == ActorState.Interact)
+            {
+                if (Machine.Elapsed >= .15f) Machine.Complete();
             }
             else if (Machine.State == ActorState.Hurt)
             {
@@ -59,21 +69,23 @@ namespace BetterDesign
             {
                 movement = hero ? input.Move * settings.moveSpeed : EnemyMovement();
                 if (movement.sqrMagnitude > .01f) { Vector2 facing = movement.normalized; Model.Face(facing.x,facing.y); }
-                Machine.TryEnter(movement.sqrMagnitude > .01f ? ActorState.Move : ActorState.Idle);
-                bool attack = hero ? input.Attack : Vector2.Distance(Position, world.Hero.Position) < 1.1f && world.Hero.IsAlive;
-                if (attack && cooldown <= 0 && Machine.TryEnter(ActorState.Attack))
+                Machine.SetLocomotion(movement.sqrMagnitude > .01f);
+                bool wantsAttack = hero ? input.Attack : Vector2.Distance(Position, world.Hero.Position) < 1.1f && world.Hero.IsAlive;
+                if (wantsAttack && cooldown <= 0 && Machine.TryEnter(ActorState.Attack,hero && world.Model.Progression.Weapon == 1))
                 {
-                    cooldown = hero ? .55f : 1.1f; resolved = false; movement = Vector2.zero;
+                    attack = hero ? (world.Model.Progression.Weapon == 1 ? settings.bow : settings.melee) : settings.enemy;
+                    cooldown = attack.cooldown; resolved = false; movement *= attack.movementScale;
                 }
                 else if (hero && input.Dash && dashCooldown <= 0 && Machine.TryEnter(ActorState.Dash))
                 {
                     dashCooldown = .9f; invulnerable = .22f;
                 }
-                if (hero && input.Spell && spellCooldown <= 0)
+                if (hero && input.Spell && spellCooldown <= 0 && Machine.TryEnter(ActorState.Skill))
                 {
-                    if (world.Fire(Position, Facing)) spellCooldown = settings.spellCooldown;
+                    attack = settings.magic; spellCooldown = attack.cooldown; resolved = false; movement *= attack.movementScale;
                 }
             }
+            Machine.SetLocomotion(movement.sqrMagnitude > .01f);
             Vector2 next = world.Clamp(Position + movement * dt);
             Model.MoveTo(next.x,next.y);
             View.Render(Model,movement,dt);
@@ -87,6 +99,8 @@ namespace BetterDesign
         public void ReceiveDamage(int amount)
         {
             if (!IsAlive || invulnerable > 0 || amount <= 0) return;
+            amount = DamageCalculator.Calculate(new DamageContext(amount));
+            amount = Mathf.Min(Health,amount);
             if (hero) world.Model.Damage(amount); else Model.Damage(amount);
             invulnerable = hero ? .65f : .12f;
             Machine.TryEnter(IsAlive ? ActorState.Hurt : ActorState.Dead);

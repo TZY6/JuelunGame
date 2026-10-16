@@ -18,4 +18,27 @@ MonoBehaviour:
   spellDamage: 35
   enemyDamage: 10
   baseEnemyHealth: 50
-  spellCooldown: 1.2
+  melee:
+    kind: 0
+    windup: 0.18
+    duration: 0.48
+    cooldown: 0.55
+    movementScale: 0
+  bow:
+    kind: 1
+    windup: 0.18
+    duration: 0.48
+    cooldown: 0.55
+    movementScale: 0.65
+  magic:
+    kind: 2
+    windup: 0.18
+    duration: 0.48
+    cooldown: 1.2
+    movementScale: 0.65
+  enemy:
+    kind: 0
+    windup: 0.3
+    duration: 0.6
+    cooldown: 1.1
+    movementScale: 0

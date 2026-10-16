@@ -17,7 +17,8 @@ Unity 2022.3.29f1。打开 `Assets/BetterDesign/Scenes/BetterDesignDemo.unity` �
 | 默认输入 | 行为 |
 | --- | --- |
 | WASD / 方向键 | 移动，斜向速度归一化 |
-| Space / 左键 | 前方扇区近战 |
+| Space / 左键 | 当前武器攻击：剑为扇区近战，弓可移动射击 |
+| R / K | 切换剑与弓 / 消耗技能点升级法术 |
 | Q / 右键 | 投射物法术 |
 | Left Shift | 冲刺、短暂无敌、冷却 |
 | E / B | 信标契约交互 / 花 10 金币购买补给 |
@@ -88,20 +89,20 @@ flowchart LR
 
 Hero/Enemy Controller 使用 Speed 1D Blend Tree（Idle/Run）、参数阻尼与固定时间 CrossFade。攻击片段保留在 BetterDesign 内，移除了旧项目动画事件，伤害由 FSM 时钟触发一次。Sprite 帧仍是离散图像，不宣称骨骼式连续形变。
 
-战斗和拾取遍历固定数组；对象池登记预置组件，耗尽不会 Instantiate 或自动扩容。Core 事件订阅由场景生命周期释放，无静态事件/全局单例。暂停冻结本世界与 Animator，不改变全局 Time.timeScale。UI 文本、拾取提示和快照允许分配，**不宣称全局零 GC**。F1 观察面板每 0.25 秒更新；Profiler 中 `BetterDesign.World` 覆盖世界模拟。
+战斗和拾取遍历固定数组；对象池登记预置组件；特效可用容量从预热值倍增至场景储备硬上限，耗尽不创建 GameObject。Core 事件订阅由场景生命周期释放，无静态事件/全局单例。暂停冻结本世界与 Animator，不改变全局 Time.timeScale。UI 文本、拾取提示和快照允许分配，**不宣称全局零 GC**。F1 观察面板每 0.25 秒更新；Profiler 中 `BetterDesign.World` 覆盖世界模拟。
 
 ## 存档与迁移
 
-存档保留原路径 `Application.persistentDataPath/better-design-v1.json`，当前载荷版本为 **2**，以便沿用原备份和读取 v1 存档。v1 药水计数迁移为治疗补给堆叠；旧存档中已经直接结算的金币保持原值。
+存档保留原路径 `Application.persistentDataPath/better-design-v1.json`，当前载荷版本为 **3**，以便沿用原备份和读取 v1/v2 存档。v1 药水计数迁移为治疗补给堆叠；旧存档中已经直接结算的金币保持原值。
 
-v2 保存玩家模型、金币/任务/波次、**完整 12 格背包、存活敌人以及尚未拾取的地面物品**。已经拾取的掉落从地面快照中移除，读档不会再次授予；读档恢复的是当时的背包与地面，不累计到当前状态。攻击进度、无敌时间与投射物不保存。校验失败时保留当前世界；JSON 校验和、临时文件 flush、原子替换与备份恢复沿用现有实现。死人不能覆盖检查点，New run 不删除原存档。
+v3 额外保存场景身份、等级/经验/技能点、武器、法术阶数、任务接取基线和世界事实；v1/v2 迁移时使用默认成长数据。v2 开始保存玩家模型、金币/任务/波次、**完整 12 格背包、存活敌人以及尚未拾取的地面物品**。已经拾取的掉落从地面快照中移除，读档不会再次授予；读档恢复的是当时的背包与地面，不累计到当前状态。攻击进度、无敌时间与投射物不保存。校验失败时保留当前世界；JSON 校验和、临时文件 flush、原子替换与备份恢复沿用现有实现。死人不能覆盖检查点，New run 不删除原存档。
 
 ## 验证入口与状态
 
-已做场景文本、fileID/父子关系、输入/管理器字段、49 个字体引用、12 个格子索引及 22 个按钮目标方法检查。**当前环境无法启动 Unity，尚未执行 Unity 编译、测试或实机试玩。**
+已做场景文本、fileID/父子关系、输入/管理器字段、49 个字体引用、12 个格子索引及 22 个按钮目标方法检查。已使用 Unity 2022.3.29f1 在独立临时项目中执行编译与自动测试；未改变当前工作副本。具体结果及验证边界见 [VALIDATION.md](VALIDATION.md)。架构审查、依赖、生命周期、取舍及迁移顺序见 [ARCHITECTURE.md](ARCHITECTURE.md)。
 
 1. **Tools → BetterDesign → Validate Assets**：检查完整场景、输入组件、掉落池、背包、字体与按钮引用。
-2. **Window → General → Test Runner → EditMode → BetterDesign.Tests → Run All**：28 个测试覆盖模型、MVC 命令路由/订阅解除、堆叠/满包原子性、奖励容量门禁、拾取前不结算、旧档迁移、掉落保存与池容量、FSM、事件、JSON 往返/损坏恢复。
+2. **Window → General → Test Runner → EditMode → BetterDesign.Tests → Run All**：42 个测试覆盖模型、MVC 命令路由/订阅解除、堆叠/满包原子性、奖励容量门禁、拾取前不结算、旧档迁移、掉落保存与池容量、FSM、事件、JSON 往返/损坏恢复。
 3. 打开场景 Play，在 PlayerInput 组件中改一个按键，验证移动/近战/法术/冲刺与暂停门禁。
 4. 击败一个敌人，确认地面出现金币和补给/蘑菇；未靠近时金币不变，靠近后金币/格子更新。
 5. Tab 选择物品、使用、丢弃并再次拾取、出售材料；满血使用不扣数量。
@@ -111,4 +112,4 @@ v2 保存玩家模型、金币/任务/波次、**完整 12 格背包、存活敌
 
 ## 扩展边界
 
-目前是二维平面、矩形边界与扇区/距离命中的架构 demo，不含障碍寻路、复杂物理碰撞、联网、触屏、拖拽交换格子、装备技能树或完整制作系统。背包支持选中与按钮操作，未实现拖拽。扩展通过 IPlayerInput、IDamageable、IInventoryView、IInventoryActions 和 ISaveStore 接入。
+当前新增等级成长、剑弓切换、法术升级及持久化；仍未迁移原 RPG1 的全部内容。目前是二维平面、矩形边界与扇区/距离命中的架构 demo，不含障碍寻路、复杂物理碰撞、联网、触屏、拖拽交换格子、完整装备/技能树界面或制作系统。背包支持选中与按钮操作，未实现拖拽。扩展通过 IPlayerInput、IDamageable、IInventoryView、IInventoryActions 和 ISaveStore 接入。

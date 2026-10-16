@@ -15,19 +15,28 @@ namespace BetterDesign.Core
         readonly GameModel model;
         readonly IInventoryView view;
         readonly IInventoryActions actions;
-        readonly IDisposable subscription;
+        readonly GameEvents events;
+        IDisposable subscription;
         int selected;
+        bool disposed;
         public InventoryController(GameModel model,GameEvents events,IInventoryView view,IInventoryActions actions)
         {
-            this.model = model; this.view = view; this.actions = actions;
-            subscription = events.Model.Subscribe(OnChanged); Render();
+            this.model = model; this.view = view; this.actions = actions; this.events = events;
+            subscription = events.InventoryChanged.Subscribe(OnChanged); Render();
         }
-        void OnChanged(ModelChanged _) { Render(); }
+        void OnChanged(InventoryChanged change) { Render(); }
         void Render() { view.Render(model.Inventory,selected); }
-        public void Select(int index) { if (index >= 0 && index < InventoryModel.Capacity) { selected = index; Render(); } }
-        public void UseSelected() { actions.UseSlot(selected); }
-        public void DropSelected() { actions.DropSlot(selected); }
-        public void SellMaterials() { actions.SellMaterials(); }
-        public void Dispose() { subscription.Dispose(); }
+        public void Select(int index) { if (!disposed && index >= 0 && index < InventoryModel.Capacity) { selected = index; Render(); } }
+        public void UseSelected() { if (!disposed) actions.UseSlot(selected); }
+        public void DropSelected() { if (!disposed) actions.DropSlot(selected); }
+        public void SellMaterials() { if (!disposed) actions.SellMaterials(); }
+        public void SetVisible(bool visible)
+        {
+            if (disposed) return;
+            if (subscription != null) { subscription.Dispose(); subscription = null; }
+            if (!visible) return;
+            subscription = events.InventoryChanged.Subscribe(OnChanged); Render();
+        }
+        public void Dispose() { SetVisible(false); disposed = true; }
     }
 }

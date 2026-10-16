@@ -100,14 +100,15 @@ namespace BetterDesign.Tests
             controller.Select(4); controller.UseSelected(); controller.DropSelected();
             Assert.AreEqual(4,actions.Used); Assert.AreEqual(4,actions.Dropped);
             controller.Select(99); Assert.AreEqual(4,view.Selected);
-            int count = view.Renders; model.Collect(ItemId.Gold,5); Assert.AreEqual(count+1,view.Renders);
+            int count = view.Renders; model.Damage(1); Assert.AreEqual(count,view.Renders);
+            model.Collect(ItemId.Supply,1); Assert.AreEqual(count+1,view.Renders);
             controller.Dispose(); count = view.Renders; model.Collect(ItemId.Gold,5); Assert.AreEqual(count,view.Renders);
         }
         [Test] public void LegacyCheckpointMigratesPotionCountIntoStacks()
         {
             var model = new GameModel(new GameEvents());
             model.Restore(new SaveData { version = 1,potions = 11,coins = 9 });
-            Assert.AreEqual(11,model.Potions); Assert.AreEqual(2,model.Inventory.Occupied); Assert.AreEqual(2,model.Capture().version);
+            Assert.AreEqual(11,model.Potions); Assert.AreEqual(2,model.Inventory.Occupied); Assert.AreEqual(3,model.Capture().version);
         }
         [Test] public void CheckpointIncludesUncollectedLootWithoutGrantingIt()
         {
@@ -190,7 +191,7 @@ namespace BetterDesign.Tests
         {
             var data = new SaveData { x = float.NaN };
             Assert.IsFalse(GameModel.IsValid(data));
-            data.x = 0; data.version = 3; Assert.IsFalse(GameModel.IsValid(data));
+            data.x = 0; data.version = 4; Assert.IsFalse(GameModel.IsValid(data));
             data.version = 2; data.enemies = new[] { new EnemySnapshot { x = 0,y = 0,hp = 0 } };
             Assert.IsFalse(GameModel.IsValid(data));
         }
@@ -226,6 +227,172 @@ namespace BetterDesign.Tests
             var handle = events.Model.Subscribe(_ => received++);
             new GameModel(events).Damage(10); handle.Dispose(); new GameModel(events).Damage(10);
             Assert.AreEqual(1,received); Assert.AreEqual(0,events.Model.ListenerCount);
+        }
+
+        [Test] public void HurtCancelsActionVersionAndDeathCannotRecover()
+        {
+            var machine = new ActorStateMachine(); int enter = 0,exit = 0;
+            machine.Entered += _ => enter++; machine.Exited += _ => exit++;
+            machine.TryEnter(ActorState.Skill); int version = machine.ActionVersion;
+            machine.SetLocomotion(true); Assert.AreEqual(LocomotionState.Move,machine.Locomotion);
+            Assert.AreEqual(ActorState.Skill,machine.State);
+            Assert.IsTrue(machine.TryEnter(ActorState.Hurt)); Assert.IsFalse(machine.IsCurrent(version));
+            machine.Complete(); Assert.AreEqual(ActorState.Move,machine.State);
+            machine.TryEnter(ActorState.Dead); machine.Complete();
+            Assert.IsFalse(machine.TryEnter(ActorState.Skill)); Assert.AreEqual(enter,exit);
+        }
+        [Test] public void FaultyObserverDoesNotSkipOtherObservers()
+        {
+            var signal = new Signal<int>(); int received = 0;
+            signal.Subscribe(_ => throw new InvalidOperationException());
+            signal.Subscribe(_ => received++);
+            Assert.Throws<InvalidOperationException>(() => signal.Publish(0)); Assert.AreEqual(1,received);
+        }
+        [Test] public void RuntimeReportsObserverFailureWithoutFailingCommand()
+        {
+            int reported = 0;
+            var events = new GameEvents(_ => reported++); var model = new GameModel(events);
+            events.Model.Subscribe(_ => throw new InvalidOperationException());
+            Assert.IsTrue(model.Collect(ItemId.Gold,5)); Assert.AreEqual(5,model.Coins); Assert.AreEqual(1,reported);
+        }
+        [Test] public void PoolExpandsOnlyInsideAuthoredCapacity()
+        {
+            var pool = new FixedPool<Item>(3,() => new Item(),1);
+            Item a,b,c,d; pool.TryRent(out a); pool.TryRent(out b); pool.TryRent(out c);
+            Assert.AreEqual(3,pool.AvailableCapacity); Assert.IsFalse(pool.TryRent(out d));
+            pool.ReturnAll(); Assert.AreEqual(0,pool.Active);
+        }
+        [Test] public void PoolRejectsDuplicateRegistration()
+        {
+            var item = new Item();
+            Assert.Throws<ArgumentException>(() => new FixedPool<Item>(2,() => item));
+        }
+        [Test] public void ExperienceSupportsExactThresholdAndSeveralLevels()
+        {
+            var model = new ProgressionModel(); model.AddExperience(30);
+            Assert.AreEqual(2,model.Level); Assert.AreEqual(0,model.Experience);
+            model.AddExperience(150); Assert.AreEqual(4,model.Level);
+            Assert.AreEqual(3,model.SkillPoints); Assert.AreEqual(0,model.Experience);
+        }
+        [Test] public void ContractCountsKillsAfterAcceptance()
+        {
+            var model = new GameModel(new GameEvents());
+            for (int i = 0; i < 6; i++) model.EnemyKilled();
+            model.InteractQuest(); model.InteractQuest();
+            Assert.IsFalse(model.QuestClaimed); Assert.AreEqual(0,model.QuestKills);
+            for (int i = 0; i < 6; i++) model.EnemyKilled();
+            model.InteractQuest(); Assert.IsTrue(model.QuestClaimed);
+        }
+        [Test] public void UnknownConditionsNeverPass()
+        {
+            var model = new GameModel(new GameEvents());
+            Assert.IsFalse(ConditionEvaluator.Evaluate(new ConditionConfig { fact = FactKind.LocationVisited,targetId = "missing",required = 1 },model));
+            Assert.IsFalse(ConditionEvaluator.Evaluate(new ConditionConfig { fact = FactKind.Kills,required = 0 },model));
+        }
+        [Test] public void ProgressionAndEquippedWeaponRoundTrip()
+        {
+            var model = new GameModel(new GameEvents()); model.EnemyKilled(); model.EquipWeapon(1);
+            var data = model.Capture(); Assert.IsTrue(GameModel.IsValid(data));
+            var copy = new GameModel(new GameEvents()); copy.Restore(data);
+            Assert.AreEqual(1,copy.Progression.Weapon); Assert.AreEqual(10,copy.Progression.Experience);
+            data.progression.experience = 100000; Assert.IsFalse(GameModel.IsValid(data));
+        }
+
+        [Test] public void SkillUpgradeSpendsPointsAndPersistsRank()
+        {
+            var progression = new ProgressionModel();
+            Assert.IsFalse(progression.TryUpgradeMagic()); progression.AddExperience(30);
+            Assert.IsTrue(progression.TryUpgradeMagic()); Assert.IsFalse(progression.TryUpgradeMagic());
+            Assert.AreEqual(1,progression.MagicRank); Assert.AreEqual(0,progression.SkillPoints);
+            Assert.IsTrue(ProgressionModel.IsValid(progression.Capture()));
+        }
+        [Test] public void WorldFactsAreIdempotentAndUseStableIdentifiers()
+        {
+            var model = new GameModel(new GameEvents());
+            Assert.IsTrue(model.Facts.Record(FactKind.LocationVisited,"sanctuary.beacon"));
+            Assert.IsFalse(model.Facts.Record(FactKind.LocationVisited,"sanctuary.beacon"));
+            var condition = new ConditionConfig { fact = FactKind.LocationVisited,targetId = "sanctuary.beacon",required = 1 };
+            Assert.IsTrue(ConditionEvaluator.Evaluate(condition,model));
+            var copy = new GameModel(new GameEvents()); copy.Restore(model.Capture());
+            Assert.IsTrue(ConditionEvaluator.Evaluate(condition,copy));
+        }
+        [Test] public void ClosedInventoryHasNoSubscribersAndReopensWithLatestData()
+        {
+            var events = new GameEvents(); var model = new GameModel(events); var view = new InventoryProbe();
+            var controller = new InventoryController(model,events,view,new InventoryActions());
+            controller.SetVisible(false); int count = view.Renders;
+            model.Collect(ItemId.Supply,1); Assert.AreEqual(count,view.Renders);
+            Assert.AreEqual(0,events.InventoryChanged.ListenerCount);
+            controller.SetVisible(true); Assert.AreEqual(count+1,view.Renders);
+            controller.Dispose(); Assert.AreEqual(0,events.InventoryChanged.ListenerCount);
+        }
+        sealed class InputProbe : IPlayerInput
+        {
+            public UnityEngine.Vector2 Movement;
+            public bool AttackPressed,SpellPressed;
+            public UnityEngine.Vector2 Move { get { return Movement; } }
+            public bool Attack { get { return AttackPressed; } }
+            public bool Spell { get { return SpellPressed; } }
+            public bool Dash { get { return false; } }
+        }
+        sealed class MemoryStore : ISaveStore
+        {
+            public SaveData Snapshot;
+            public bool TrySave(SaveData data,out string message) { Snapshot = data; message = "saved"; return true; }
+            public bool TryLoad(out SaveData data,out string message) { data = Snapshot; message = "loaded"; return data != null; }
+        }
+        [Test] public void AuthoredWorldBootsMovesShootsAndRestoresAsOneSnapshot()
+        {
+            var scene = UnityEditor.SceneManagement.EditorSceneManager.OpenScene("Assets/BetterDesign/Scenes/BetterDesignDemo.unity",UnityEditor.SceneManagement.OpenSceneMode.Additive);
+            DemoWorld world = null;
+            try
+            {
+                DemoScene entry = null;
+                foreach (var root in scene.GetRootGameObjects())
+                {
+                    var candidate = root.GetComponentInChildren<DemoScene>(true);
+                    if (candidate != null) entry = candidate;
+                }
+                Assert.IsNotNull(entry);
+                var input = new InputProbe { Movement = UnityEngine.Vector2.right };
+                var store = new MemoryStore();
+                world = new DemoWorld(entry.WorldManager,entry.Settings,store,input);
+                float x = world.Hero.Position.x; world.Tick(.05f);
+                Assert.Greater(world.Hero.Position.x,x);
+                world.Model.EquipWeapon(1); input.AttackPressed = true; world.Tick(.05f); input.AttackPressed = false;
+                for (int i = 0; i < 5; i++) world.Tick(.05f);
+                Assert.Greater(world.PoolActive,world.LivingEnemies);
+                Assert.AreEqual(ActorState.Attack,world.Hero.Machine.State);
+                Assert.AreEqual(LocomotionState.Move,world.Hero.Machine.Locomotion);
+                world.Save(); Assert.IsTrue(GameModel.IsValid(store.Snapshot));
+                float savedX = store.Snapshot.x; world.Hero.Model.MoveTo(3,3);
+                world.Load(); Assert.AreEqual(savedX,world.Hero.Position.x);
+                Assert.AreEqual(1,world.Model.Progression.Weapon);
+                Assert.AreEqual(store.Snapshot.enemies.Length,world.LivingEnemies);
+            }
+            finally
+            {
+                if (world != null) world.Dispose();
+                UnityEditor.SceneManagement.EditorSceneManager.CloseScene(scene,true);
+            }
+        }
+
+        [UnityEngine.TestTools.UnityTest]
+        public System.Collections.IEnumerator AuthoredSceneEntersPlayModeAndOwnsUiLifetime()
+        {
+            UnityEditor.SceneManagement.EditorSceneManager.OpenScene("Assets/BetterDesign/Scenes/BetterDesignDemo.unity");
+            yield return new UnityEngine.TestTools.EnterPlayMode();
+            var entry = UnityEngine.Object.FindObjectOfType<DemoScene>();
+            Assert.IsNotNull(entry); Assert.IsTrue(entry.enabled);
+            yield return null;
+            entry.UiManager.CloseAll(); Assert.IsFalse(entry.UiManager.HasModal);
+            entry.UiManager.OpenBag(); Assert.IsTrue(entry.UiManager.HasModal);
+            entry.UiManager.CloseAll(); Assert.IsFalse(entry.UiManager.HasModal);
+            entry.UiManager.enabled = false;
+            entry.UiManager.enabled = true;
+            entry.UiManager.OpenBag(); Assert.IsTrue(entry.UiManager.HasModal);
+            entry.UiManager.CloseAll();
+            yield return new UnityEngine.TestTools.ExitPlayMode();
         }
     }
 }

@@ -13,6 +13,8 @@ namespace BetterDesign
         [Header("Combat")]
         public KeyCode attack = KeyCode.Space, spell = KeyCode.Q, dash = KeyCode.LeftShift;
         public bool allowMouseButtons = true;
+        [Header("Equipment and progression")]
+        public KeyCode switchWeapon = KeyCode.R, upgradeSkill = KeyCode.K;
         [Header("World commands")]
         public KeyCode interact = KeyCode.E, buy = KeyCode.B, heal = KeyCode.H, nextWave = KeyCode.N;
         [Header("UI and persistence")]
@@ -31,6 +33,8 @@ namespace BetterDesign
         public bool InteractPressed { get; private set; }
         public bool BuyPressed { get; private set; }
         public bool HealPressed { get; private set; }
+        public bool UpgradeSkillPressed { get; private set; }
+        public bool SwitchWeaponPressed { get; private set; }
         public bool NextWavePressed { get; private set; }
         public void Capture()
         {
@@ -43,6 +47,8 @@ namespace BetterDesign
             attackPressed = Input.GetKeyDown(attack) || (allowMouseButtons && !overUI && Input.GetMouseButtonDown(0));
             spellPressed = Input.GetKeyDown(spell) || (allowMouseButtons && !overUI && Input.GetMouseButtonDown(1));
             dashPressed = Input.GetKeyDown(dash);
+            SwitchWeaponPressed = Input.GetKeyDown(switchWeapon);
+            UpgradeSkillPressed = Input.GetKeyDown(upgradeSkill);
             InventoryPressed = Input.GetKeyDown(inventory); PausePressed = Input.GetKeyDown(pause);
             ObserverPressed = Input.GetKeyDown(observer); SavePressed = Input.GetKeyDown(save); LoadPressed = Input.GetKeyDown(load);
             InteractPressed = Input.GetKeyDown(interact); BuyPressed = Input.GetKeyDown(buy);

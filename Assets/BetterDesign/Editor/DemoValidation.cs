@@ -24,8 +24,9 @@ namespace BetterDesign.Editor
         [MenuItem("Tools/BetterDesign/Validate Assets")]
         public static void Validate()
         {
+            DemoImportRepair.EnsureBindings();
             var config = AssetDatabase.LoadAssetAtPath<DemoSettings>(Root+"Configuration/Sanctuary.asset");
-            Require(config != null,"Configuration asset missing.");
+            Require(config != null && config.IsValid,"Configuration asset missing or invalid.");
             var expectedFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Fonts/7000msyhbdallicon SDF.asset");
             Require(expectedFont != null,"Requested TMP font asset missing.");
             foreach (string path in new[] { "Animations/HeroAttack.anim", "Animations/EnemyAttack.anim" })

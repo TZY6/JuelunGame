@@ -16,13 +16,17 @@ namespace BetterDesign
         static readonly int Locomotion = UnityEngine.Animator.StringToHash("Base Layer.Locomotion");
         static readonly int Attack = UnityEngine.Animator.StringToHash("Base Layer.Attack");
         ActorState lastState;
+        Vector3 originalScale;
+        bool originalFlip;
+        int originalSorting;
         float flash;
         Color normalColor;
         public bool HasSceneReferences { get { return spriteRenderer != null && animator != null; } }
         public void Initialize()
         {
             if (!HasSceneReferences) throw new System.InvalidOperationException(name + ": actor scene references missing.");
-            normalColor = Renderer.color;
+            normalColor = Renderer.color; originalScale = transform.localScale;
+            originalFlip = Renderer.flipX; originalSorting = Renderer.sortingOrder;
             lastState = ActorState.Idle;
         }
         public void Render(ActorModel model,Vector2 movement,float dt)
@@ -39,8 +43,8 @@ namespace BetterDesign
                 Animation.SetFloat(Speed, movement.sqrMagnitude > 0.01f ? 1 : 0, 0.12f, dt);
                 if (state != lastState)
                 {
-                    if (state == ActorState.Attack) Animation.CrossFadeInFixedTime(Attack, 0.07f);
-                    else if (lastState == ActorState.Attack) Animation.CrossFadeInFixedTime(Locomotion, 0.08f);
+                    if ((state == ActorState.Attack || state == ActorState.Skill)) Animation.CrossFadeInFixedTime(Attack, 0.07f);
+                    else if ((lastState == ActorState.Attack || lastState == ActorState.Skill)) Animation.CrossFadeInFixedTime(Locomotion, 0.08f);
                 }
             }
             flash = Mathf.Max(0, flash - dt);
@@ -52,8 +56,15 @@ namespace BetterDesign
         {
             gameObject.SetActive(true);
             lastState = ActorState.Idle; flash = 0;
+            Renderer.color = normalColor; Renderer.flipX = originalFlip; Renderer.sortingOrder = originalSorting;
+            transform.localScale = originalScale;
             if (Animation != null && Animation.runtimeAnimatorController != null) { Animation.speed = 1; Animation.Rebind(); Animation.Update(0); }
         }
-        public void OnReturn() { if (this != null) gameObject.SetActive(false); }
+        public void OnReturn()
+        {
+            if (this == null) return;
+            StopAllCoroutines(); flash = 0; Renderer.color = normalColor;
+            Animation.speed = 1; gameObject.SetActive(false);
+        }
     }
 }

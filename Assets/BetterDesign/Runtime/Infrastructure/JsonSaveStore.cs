@@ -53,15 +53,20 @@ namespace BetterDesign
             data = JsonUtility.FromJson<SaveData>(envelope.payload);
             return GameModel.IsValid(data);
         }
+        bool ReadSafe(string path,out SaveData data)
+        {
+            try { return Read(path,out data); }
+            catch (ArgumentException) { data = null; return false; }
+            catch (IOException) { data = null; return false; }
+            catch (UnauthorizedAccessException) { data = null; return false; }
+        }
         public bool TryLoad(out SaveData data, out string message)
         {
             data = null;
             try
             {
-                try { if (Read(file, out data)) { message = "Checkpoint loaded."; return true; } }
-                catch (ArgumentException) { /* Invalid JSON: try backup. */ }
-                try { if (Read(file + ".bak", out data)) { message = "Recovered previous checkpoint from backup."; return true; } }
-                catch (ArgumentException) { }
+                if (ReadSafe(file,out data)) { message = "Checkpoint loaded."; return true; }
+                if (ReadSafe(file + ".bak",out data)) { message = "Recovered previous checkpoint from backup."; return true; }
                 data = null; message = "No valid checkpoint. Current session kept."; return false;
             }
             catch (IOException ex) { message = "Load I/O error: " + ex.Message; return false; }

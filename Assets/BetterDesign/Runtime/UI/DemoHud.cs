@@ -50,17 +50,19 @@ namespace BetterDesign
         void OnCombat(CombatEvent evt) { lastActor = evt.ActorId; lastDamage = evt.Damage; }
         public void Tick(float unscaledDt)
         {
+            if (world == null) return;
             if (dirty)
             {
                 dirty = false;
                 var model = world.Model;
-                stats.text = "生命 " + model.Hp + "/100     金币 " + model.Coins + "     补给 " + model.Potions + "     第 " + model.Wave + " 波";
-                health.rectTransform.anchorMax = new Vector2(model.Hp / 100f, 1);
+                stats.text = "生命 " + model.Hp + "/100     金币 " + model.Coins + "     补给 " + model.Potions + "     Lv." + model.Progression.Level + " XP " + model.Progression.Experience + "/" + model.Progression.RequiredExperience + " 法术" + model.Progression.MagicRank + "阶/" + model.Progression.SkillPoints + "点 " + (model.Progression.Weapon == 0 ? "剑" : "弓") + " 第 " + model.Wave + " 波";
+                
                 quest.text = !model.QuestAccepted ? "前往青色信标 [E]\n接取守卫清理契约。" :
                     model.QuestClaimed ? "契约已完成\n金币 +50 / 补给 +2\n继续挑战下一波。" :
-                     "已击败守卫：" + Mathf.Min(model.Kills,6) + "/6\n奖励：50 金币 + 2 瓶补给\n回到信标领取奖励 [E]。";
+                     "已击败守卫：" + Mathf.Min(model.QuestKills,6) + "/6\n奖励：50 金币 + 2 瓶补给\n回到信标领取奖励 [E]。";
                 bagText.text = "金币：" + model.Coins + "    治疗补给：" + model.Potions + "    格子：" + model.Inventory.Occupied + "/12";
             }
+            health.rectTransform.anchorMax = new Vector2(Mathf.MoveTowards(health.rectTransform.anchorMax.x,world.Model.Hp/100f,unscaledDt*1.8f),1);
             status.text = !world.Hero.IsAlive ? "挑战失败 / 按 F9 恢复检查点" : world.Model.WaveCleared ? "本波已清理 / 按 N 继续" : "";
             noticeTimer -= unscaledDt;
             notice.enabled = noticeTimer > 0;
@@ -70,7 +72,7 @@ namespace BetterDesign
                 debugTimer = .25f;
                 diagnostics.text =
                     "MODEL -> event -> HUD\nCOMMAND -> controller -> model\n\n" +
-                    "Hero FSM: " + world.Hero.Machine.State + "\nTransitions: " + world.Hero.Machine.Transitions +
+                    "Locomotion: " + world.Hero.Machine.Locomotion + "\nAction: " + world.Hero.Machine.State + "\nTransitions: " + world.Hero.Machine.Transitions +
                     "\nSentinels alive: " + world.LivingEnemies + "\n地面掉落：" + world.Loot.Active +
                     "\n\nPool active (actors + FX): " + world.PoolActive + "\nFX peak / capacity: " + world.PoolPeak + "/" + DemoWorld.EffectCapacity +
                     "\nPool misses: " + world.PoolMisses +
@@ -91,7 +93,17 @@ namespace BetterDesign
             modalLayer.SetActive(stack.IsOpen);
             if (world != null && world.Paused != stack.IsOpen) world.TogglePause();
         }
-        public void Dispose()
+        void OnDisable() { if (world != null) CloseAll(); Unsubscribe(); }
+        void OnEnable() { if (world != null) Subscribe(); }
+        void Subscribe()
+        {
+            Unsubscribe();
+            modelSubscription = world.Events.Model.Subscribe(OnModel);
+            noticeSubscription = world.Events.Notice.Subscribe(OnNotice);
+            combatSubscription = world.Events.Combat.Subscribe(OnCombat); dirty = true;
+        }
+        public void Dispose() { Unsubscribe(); world = null; }
+        void Unsubscribe()
         {
             if (modelSubscription != null) modelSubscription.Dispose();
             if (noticeSubscription != null) noticeSubscription.Dispose();

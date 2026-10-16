@@ -485,6 +485,8 @@ MonoBehaviour:
   spell: 113
   dash: 304
   allowMouseButtons: 1
+  switchWeapon: 114
+  upgradeSkill: 107
   interact: 101
   buy: 98
   heal: 104
@@ -43710,7 +43712,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "WASD 移动    空格 / 左键 近战    Q / 右键 法术    Shift 冲刺"
+  m_text: "WASD 移动   空格/左键 攻击   R 切换剑弓   Q/右键 法术   K 升级   Shift 冲刺"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 563ebed8c882c5e458174c07361ae986, type: 2}
   m_sharedMaterial: {fileID: 0}
