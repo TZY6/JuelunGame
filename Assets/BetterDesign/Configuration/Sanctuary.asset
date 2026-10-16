@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84fba8f7ec68d0be6b886fb55cf7ce94, type: 3}
+  m_Name: Sanctuary
+  m_EditorClassIdentifier: 
+  moveSpeed: 4.2
+  enemySpeed: 1.4
+  meleeDamage: 25
+  spellDamage: 35
+  enemyDamage: 10
+  baseEnemyHealth: 50
+  spellCooldown: 1.2
+  heroAnimator: {fileID: 9100000, guid: 7a5f5d433140c438383ae635aa28d532, type: 2}
+  enemyAnimator: {fileID: 9100000, guid: 8a8e217d5bc308846de57f6ff65503a6, type: 2}
+  heroSprite: {fileID: 786807703, guid: 18e7be5fc43fb1b43baec2a647e94177, type: 3}
+  enemySprite: {fileID: -8426932590203072280, guid: c47a96ea76a32479fadb0e867cd08899, type: 3}
+  groundSprite: {fileID: -1234425174, guid: 0ea6e41cd44260040abfa324e3283b61, type: 3}

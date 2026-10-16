@@ -1,0 +1,13 @@
+{
+  "name": "BetterDesign.Tests",
+  "references": [
+    "BetterDesign.Core",
+    "BetterDesign.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "BetterDesign.Runtime",
+  "rootNamespace": "BetterDesign",
+  "references": [
+    "BetterDesign.Core",
+    "UnityEngine.UI"
+  ]
+}

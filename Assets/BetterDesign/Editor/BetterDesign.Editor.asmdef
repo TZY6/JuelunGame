@@ -1,0 +1,12 @@
+{
+  "name": "BetterDesign.Editor",
+  "rootNamespace": "BetterDesign.Editor",
+  "references": [
+    "BetterDesign.Core",
+    "BetterDesign.Runtime",
+    "UnityEngine.UI"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}
