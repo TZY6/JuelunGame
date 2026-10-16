@@ -22,7 +22,7 @@ namespace BetterDesign
         static readonly int Attack = UnityEngine.Animator.StringToHash("Base Layer.Attack");
         ActorState lastState;
         Vector3 originalScale;
-        bool originalFlip;
+        bool originalFlip,desiredFlip;
         int originalSorting;
         float flash;
         Color normalColor;
@@ -32,13 +32,14 @@ namespace BetterDesign
             if (!HasSceneReferences) throw new System.InvalidOperationException(name + ": actor scene references missing.");
             defaultController = animator.runtimeAnimatorController;
             normalColor = Renderer.color; originalScale = transform.localScale;
-            originalFlip = Renderer.flipX; originalSorting = Renderer.sortingOrder;
+            originalFlip = desiredFlip = Renderer.flipX; originalSorting = Renderer.sortingOrder;
             lastState = ActorState.Idle;
         }
         public void Render(ActorModel model,Vector2 movement,float dt,int maximumHealth = 100)
         {
             transform.position = new Vector3(model.X,model.Y,0);
-            if (Mathf.Abs(model.FacingX) > .01f) Renderer.flipX = model.FacingX < 0;
+            if (Mathf.Abs(model.FacingX) > .01f) desiredFlip = model.FacingX < 0;
+            Renderer.flipX = desiredFlip;
             Present(model.Machine.State,movement,dt);
             if (!HasCombatReferences) return;
             bool alive = model.Health > 0;
@@ -76,6 +77,7 @@ namespace BetterDesign
             Renderer.color = flash > 0 ? new Color(1,.15f,.15f,1) : state == ActorState.Dead ? new Color(.4f, .4f, .4f, .5f) : normalColor;
             lastState = state;
         }
+        void LateUpdate() { if (spriteRenderer != null) spriteRenderer.flipX = desiredFlip; }
         public void SetWeapon(bool bow)
         {
             var controller = bow && bowController != null ? bowController : defaultController;
@@ -88,7 +90,7 @@ namespace BetterDesign
         {
             gameObject.SetActive(true);
             lastState = ActorState.Idle; flash = 0;
-            Renderer.color = normalColor; Renderer.flipX = originalFlip; Renderer.sortingOrder = originalSorting;
+            Renderer.color = normalColor; Renderer.flipX = desiredFlip = originalFlip; Renderer.sortingOrder = originalSorting;
             transform.localScale = originalScale;
             if (Animation != null && Animation.runtimeAnimatorController != null) { Animation.speed = 1; Animation.Rebind(); Animation.Update(0); }
         }

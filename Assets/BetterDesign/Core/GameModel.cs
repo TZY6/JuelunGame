@@ -108,6 +108,11 @@ namespace BetterDesign.Core
             Player.Heal(40,MaxHp); Changed(ChangeKind.Inventory); return true;
         }
         public bool UsePotion() { return UseItem(Inventory.Find(ItemId.Supply)); }
+        public bool MoveItem(int from,int to)
+        {
+            if (!Inventory.TryMove(from,to)) return false;
+            Changed(ChangeKind.Inventory); return true;
+        }
         public bool RemoveItem(int index,int amount)
         {
             if (!Inventory.TryRemove(index,amount)) return false;

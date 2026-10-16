@@ -1,9 +1,12 @@
 # 当前验证结果
-对战修复基线：e5125ffa0621782005cce57439dcea9e78a49e9d。Unity 2022.3.29f1 / TMP 3.0.6。
+朝向与拖拽修复基线：9b87625313e95ff6e4ed948e2caec9b0f6374bd9。Unity 2022.3.29f1 / TMP 3.0.6。
 
 - BetterDesign.Core、Runtime、Editor、Tests 四个程序集 Roslyn 编译通过。
-- 独立临时 Unity 项目中执行 BetterDesign.Tests：**54 / 54 通过，0 失败**。包含进入 Play Mode、Awake、UI Disable/Enable、存档 JSON/文件恢复及 12 项对战验收测试。
+- 独立临时 Unity 项目中执行 BetterDesign.Tests：**64 / 64 通过，0 失败**。包含进入 Play Mode、Awake、UI Disable/Enable、存档 JSON/文件恢复及 12 项对战验收测试。
+- 新增朝向、拖拽与存档格子回归；Play Mode 检查动画更新后朝向。UGUI 事件测试覆盖移动、关闭、数据变化、拖出取消；模型测试覆盖合并上限、交换及失败原子性。
 - 近战、弓箭、法术分别通过整波清场模拟，敌人 AI 正常运行；远程测试允许合法消耗初始治疗补给。
+- 额外进入 Play Mode，以真实 EventSystem.RaycastAll 命中第 6 格并通过 ExecuteHierarchy 投放第 1 格补给，验证 0 → 5 的模型移动及拖拽图标关闭。该探针在临时项目运行，不是操作系统鼠标回放。
+- 场景有 629 个预置 GameObject（新增 1 个无射线拖拽图标），12 个格子各绑定 InventorySlotDrag。
 - 场景验证 17 个角色、48 FX、64 掉落、12 格背包、49 TMP 标签、22 按钮，以及血条/攻击方向/瞄准/弓手动画/字体回退/相机/EventSystem 引用。
 - 字体验证覆盖实际 TMP 字符输出，而不仅是资源引用。原 7000 主字体及目录外的字体资源、TMP 配置没有修改。
 - 有图形设备的 Unity 相机渲染检查了真实 HUD、字形、血条和战区；架构面板默认隐藏。

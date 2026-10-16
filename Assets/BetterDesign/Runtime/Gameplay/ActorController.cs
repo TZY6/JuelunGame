@@ -49,7 +49,8 @@ namespace BetterDesign
                 spellBuffer = input.Spell ? .18f : spellBuffer-dt;
                 dashBuffer = input.Dash ? .18f : dashBuffer-dt;
                 var aimed = input as IAimedPlayerInput;
-                if (aimed != null && aimed.HasAim)
+                bool aimingAction = input.Attack || input.Spell || Machine.State == ActorState.Attack || Machine.State == ActorState.Skill;
+                if (aimed != null && aimed.HasAim && (aimingAction || input.Move.sqrMagnitude < .01f))
                 {
                     Vector2 direction = aimed.AimPoint-Position;
                     if (direction.sqrMagnitude > .04f) Model.Face(direction.normalized.x,direction.normalized.y);

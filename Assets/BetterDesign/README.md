@@ -6,7 +6,7 @@ Unity 2022.3.29f1。打开 `Assets/BetterDesign/Scenes/BetterDesignDemo.unity` �
 
 检出 `codex/better-design-sanctuary` 分支后 `git pull --ff-only`，等待 Unity 编译。打开上述场景，点击 Play，然后点击 Game 视图取得输入焦点。无需运行生成器，也无需更改 Build Settings。
 
-场景里有 **628 个预置 GameObject**：玩家、16 个敌人槽位（首波 6 个启用）、48 个特效槽位、64 个掉落物槽位、地图、相机、EventSystem、输入与其他管理器、12 个背包格子。玩法与面板不通过运行时代码搭建；后续波次、投射物和掉落复用已有对象。TMP 会正常创建用于字体回退的内部渲染子网格。
+场景里有 **629 个预置 GameObject**：玩家、16 个敌人槽位（首波 6 个启用）、48 个特效槽位、64 个掉落物槽位、地图、相机、EventSystem、输入与其他管理器、12 个背包格子。玩法与面板不通过运行时代码搭建；后续波次、投射物和掉落复用已有对象。TMP 会正常创建用于字体回退的内部渲染子网格。
 
 ## 玩家输入在哪里
 
@@ -33,7 +33,7 @@ Unity 2022.3.29f1。打开 `Assets/BetterDesign/Scenes/BetterDesignDemo.unity` �
 | 模块 | Model | Controller | View |
 | --- | --- | --- | --- |
 | 角色 | Core/ActorModel：位置、生命、面向、FSM | ActorController：输入、AI、攻击前摇、命中、冲刺、硬直 | ActorView：只将模型映射到 Transform / SpriteRenderer / Animator |
-| 背包 | Core/InventoryModel：12 格、堆叠、容量、原子增删 | Core/InventoryController：选择/使用/丢弃/出售命令，订阅模型事件 | InventoryView：实际场景中的图标、数量、格子与说明 |
+| 背包 | Core/InventoryModel：12 格、堆叠、容量、原子增删 | Core/InventoryController：选择/拖拽移动/使用/丢弃/出售命令，订阅模型事件 | InventoryView：实际场景中的图标、数量、格子与说明 |
 | 游戏进度 | GameModel：金币、任务、波次、共享 Player 模型 | DemoWorld：协调战斗、波次、掉落、存档 | DemoHud：UGUI/TMP HUD 与模态面板 |
 | 掉落 | LootSnapshot：物品、数量、地面坐标 | LootController：容量预留、拾取、快照与回收 | LootView：预置 SpriteRenderer、物品图标与浮动反馈 |
 
@@ -70,6 +70,8 @@ flowchart LR
 - **出售所有蘑菇**：每个 2 金币，为后续拾取腾出空间。
 - **返回游戏**：关闭背包，恢复模拟。
 
+左键拖拽物品到空格会移动；拖到不同物品会交换；同类物品优先合并至堆叠上限，余量留在原格，目标已满则不操作。拖出背包、关闭面板、失焦或背包数据变化会取消拖拽。拖拽图标及 12 个拖拽处理组件均已预置在场景中。换格直接修改 InventoryModel，F5/F9 保留格子位置。
+
 补给每格最多 10，蘑菇每格最多 20；先补齐已有堆叠，再使用空格。增加与拾取是整批原子操作。购买和契约奖励在空间不足时不会扣款或标记已领取。
 
 掉落池共 64 槽。进入下一波前预留该波所有敌人的掉落容量；玩家丢弃也不能占用仍活着的敌人所需的预留空间。这样既不动态扩容，也不会因为地面残留物品而吞掉死亡奖励。
@@ -87,6 +89,8 @@ flowchart LR
 
 ## 动画、对象池与性能
 
+普通移动跟随移动方向，停下后保留最后朝向；攻击或施法时跟随鼠标，可以边走边朝相反方向射箭。静止鼠标不会持续覆盖移动朝向。ActorView 在 LateUpdate 应用模型左右翻转，避免动画片段覆盖 flipX；像素资源仍使用原有左右翻转表现。
+
 Hero/Enemy Controller 使用 Speed 1D Blend Tree（Idle/Run）、参数阻尼与固定时间 CrossFade。攻击片段保留在 BetterDesign 内，移除了旧项目动画事件，伤害由 FSM 时钟触发一次。Sprite 帧仍是离散图像，不宣称骨骼式连续形变。
 
 战斗和拾取遍历固定数组；对象池登记预置组件；特效可用容量从预热值倍增至场景储备硬上限，耗尽不创建 GameObject。Core 事件订阅由场景生命周期释放，无静态事件/全局单例。暂停冻结本世界与 Animator，不改变全局 Time.timeScale。UI 文本、拾取提示和快照允许分配，**不宣称全局零 GC**。F1 观察面板每 0.25 秒更新；Profiler 中 `BetterDesign.World` 覆盖世界模拟。
@@ -102,16 +106,16 @@ v3 额外保存场景身份、等级/经验/技能点、武器、法术阶数、
 已做场景文本、fileID/父子关系、输入/管理器字段、49 个字体引用、12 个格子索引及 22 个按钮目标方法检查。已使用 Unity 2022.3.29f1 在独立临时项目中执行编译与自动测试；未改变当前工作副本。具体结果及验证边界见 [VALIDATION.md](VALIDATION.md)。架构审查、依赖、生命周期、取舍及迁移顺序见 [ARCHITECTURE.md](ARCHITECTURE.md)。
 
 1. **Tools → BetterDesign → Validate Assets**：检查完整场景、输入组件、掉落池、背包、字体与按钮引用。
-2. **Window → General → Test Runner → EditMode → BetterDesign.Tests → Run All**：54 个测试覆盖模型、MVC 命令路由/订阅解除、堆叠/满包原子性、奖励容量门禁、拾取前不结算、旧档迁移、掉落保存与池容量、FSM、事件、JSON 往返/损坏恢复。
+2. **Window → General → Test Runner → EditMode → BetterDesign.Tests → Run All**：64 个测试覆盖模型、MVC 命令路由/订阅解除、堆叠/满包原子性、奖励容量门禁、拾取前不结算、旧档迁移、掉落保存与池容量、FSM、事件、JSON 往返/损坏恢复。
 3. 打开场景 Play，在 PlayerInput 组件中改一个按键，验证移动/近战/法术/冲刺与暂停门禁。
 4. 击败一个敌人，确认地面出现金币和补给/蘑菇；未靠近时金币不变，靠近后金币/格子更新。
-5. Tab 选择物品、使用、丢弃并再次拾取、出售材料；满血使用不扣数量。
+5. Tab 拖拽物品到空格/同类/异类格，检查移动/合并/交换；拖出或关闭不改数据。再选择、使用、丢弃并再次拾取、出售材料；满血使用不扣数量。
 6. F5 保存含地面掉落的状态，拾取/消费后 F9，确认恢复原背包、钱包和地面物品，未重复累计。
 7. 清场回信标领取奖励两次，确认只发一次；N 继续，验证对象池复用。
 8. 重复暂停/背包与进出 Play，检查 Console、监听数量及 Profiler。
 
 ## 扩展边界
 
-当前新增等级成长、剑弓切换、法术升级及持久化；仍未迁移原 RPG1 的全部内容。目前是二维平面、矩形边界与扇区/距离命中的架构 demo，不含障碍寻路、复杂物理碰撞、联网、触屏、拖拽交换格子、完整装备/技能树界面或制作系统。背包支持选中与按钮操作，未实现拖拽。扩展通过 IPlayerInput、IDamageable、IInventoryView、IInventoryActions 和 ISaveStore 接入。
+当前新增等级成长、剑弓切换、法术升级及持久化；仍未迁移原 RPG1 的全部内容。目前是二维平面、矩形边界与扇区/距离命中的架构 demo，不含障碍寻路、复杂物理碰撞、联网、触屏、完整装备/技能树界面或制作系统。扩展通过 IPlayerInput、IDamageable、IInventoryView、IInventoryActions 和 ISaveStore 接入。
 
 本轮对战修复、真实复现原因、整波回归与玩家复验路径见 [BATTLE_ACCEPTANCE.md](BATTLE_ACCEPTANCE.md)。战斗附有血条、方向提示、受击反馈及独立弓手动画；F1 架构面板默认隐藏。

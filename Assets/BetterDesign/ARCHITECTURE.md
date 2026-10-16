@@ -107,3 +107,7 @@ FixedPool 提供 TryRent/Return/ReturnAll、初始可用容量、倍增到硬上
 
 ## 对战修复后的补充
 玩家鼠标瞄准通过 IAimedPlayerInput 独立于移动输入；连续攻击/法术配合 180 ms 缓冲，闪避可取消未结算动作。投射物采用线段扫掠，敌人使用有限邻居分离。ActorView 的血条、攻击/瞄准指示与弓手 Animator 均来自场景序列化引用。输入和 HUD 引用本场景 EventSystem，模态关闭清理选择，避免原 Submit/空格冲突。SceneFontFallback 通过可释放的 TMP 字体请求回调和文本预处理补齐主字体缺字，不修改共享字体资产的配置；所有字体资源仍为静态配置。详见 BATTLE_ACCEPTANCE.md。
+
+## 背包拖拽与朝向维护
+InventorySlotDrag 仅转发 UGUI 指针事件，InventoryView 管理拖拽表现与取消，InventoryController 发出 MoveSlot 命令，GameModel/InventoryModel 原子提交并发布 InventoryChanged。拖拽开始记录模型 Revision，期间数据变化则取消，避免对旧格子快照执行命令；无需引入独立全局拖拽管理器。固定 12 格使用已布置的图标，未增加运行时 UI 工厂。
+ActorController 决定业务面向；输入只在鼠标移动或攻击时提供主动瞄准，移动和静止鼠标不争夺面向。ActorView 在动画更新后的 LateUpdate 应用 flipX，模型仍是方向真值。代价是视图每帧一次布尔赋值；没有通过根对象负缩放影响子血条和瞄准指示。

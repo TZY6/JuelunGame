@@ -392,7 +392,46 @@ namespace BetterDesign.Tests
             entry.UiManager.enabled = true;
             entry.UiManager.OpenBag(); Assert.IsTrue(entry.UiManager.HasModal);
             entry.UiManager.CloseAll();
+            entry.enabled = false;
+            var pose = new ActorModel(); pose.Reset(100,-5,0); pose.Face(-1,0);
+            entry.WorldManager.hero.Render(pose,UnityEngine.Vector2.left,.02f);
+            yield return null; Assert.IsTrue(entry.WorldManager.hero.Renderer.flipX);
+            pose.Face(1,0); entry.WorldManager.hero.Render(pose,UnityEngine.Vector2.right,.02f);
+            yield return null; Assert.IsFalse(entry.WorldManager.hero.Renderer.flipX);
+            entry.enabled = true;
             yield return new UnityEngine.TestTools.ExitPlayMode();
+        }
+
+        [Test] public void InventoryMoveToEmptyPreservesQuantityAndPersistsSlot()
+        {
+            var events = new GameEvents(); var model = new GameModel(events); int changes = 0;
+            events.InventoryChanged.Subscribe(_ => changes++);
+            Assert.IsTrue(model.MoveItem(0,5)); Assert.AreEqual(1,changes);
+            Assert.AreEqual(0,model.Inventory[0].amount); Assert.AreEqual(3,model.Inventory[5].amount);
+            var json = UnityEngine.JsonUtility.ToJson(model.Capture());
+            var restored = new GameModel(new GameEvents()); restored.Restore(UnityEngine.JsonUtility.FromJson<SaveData>(json));
+            Assert.AreEqual(3,restored.Inventory[5].amount); Assert.AreEqual(0,restored.Inventory[0].amount);
+        }
+        [Test] public void InventoryDragMergesToLimitAndKeepsRemainder()
+        {
+            var inventory = new InventoryModel(); inventory.TryAdd(ItemId.Supply,12);
+            Assert.IsTrue(inventory.TryMove(0,1));
+            Assert.AreEqual(2,inventory[0].amount); Assert.AreEqual(10,inventory[1].amount);
+            Assert.AreEqual(12,inventory.Count(ItemId.Supply));
+        }
+        [Test] public void InventoryDragSwapsDifferentItemsAtomically()
+        {
+            var inventory = new InventoryModel(); inventory.TryAdd(ItemId.Supply,3); inventory.TryAdd(ItemId.Mushroom,2);
+            Assert.IsTrue(inventory.TryMove(0,1));
+            Assert.AreEqual(ItemId.Mushroom,inventory[0].item); Assert.AreEqual(2,inventory[0].amount);
+            Assert.AreEqual(ItemId.Supply,inventory[1].item); Assert.AreEqual(3,inventory[1].amount);
+        }
+        [Test] public void InvalidInventoryDragDoesNotChangeRevisionOrData()
+        {
+            var inventory = new InventoryModel(); inventory.TryAdd(ItemId.Supply,20); int revision = inventory.Revision;
+            Assert.IsFalse(inventory.TryMove(0,1)); Assert.IsFalse(inventory.TryMove(0,0));
+            Assert.IsFalse(inventory.TryMove(-1,2)); Assert.IsFalse(inventory.TryMove(0,12)); Assert.IsFalse(inventory.TryMove(2,0));
+            Assert.AreEqual(revision,inventory.Revision); Assert.AreEqual(20,inventory.Count(ItemId.Supply));
         }
     }
 }

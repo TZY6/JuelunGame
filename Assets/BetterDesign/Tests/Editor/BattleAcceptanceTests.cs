@@ -183,5 +183,87 @@ namespace BetterDesign.Tests
         }
         [Test] public void AimedBowCanWinALiveWave() { WinRangedWave(false); }
         [Test] public void AimedMagicCanWinALiveWave() { WinRangedWave(true); }
+
+        [Test] public void WalkingFacesMovementWhenMouseIsStationaryElsewhere()
+        {
+            input.Aiming = true; input.Target = Vector2.right*5; input.Movement = Vector2.left;
+            world.Hero.Tick(.02f,input); Assert.Less(world.Hero.Model.FacingX,0); Assert.IsTrue(world.Hero.View.Renderer.flipX);
+            input.Movement = Vector2.right; world.Hero.Tick(.02f,input);
+            Assert.Greater(world.Hero.Model.FacingX,0); Assert.IsFalse(world.Hero.View.Renderer.flipX);
+        }
+        [Test] public void FacingSurvivesAnimatorEvaluationAndWeaponChange()
+        {
+            input.Movement = Vector2.left; world.Hero.Tick(.02f,input);
+            world.Hero.View.Animation.Update(.05f); Assert.IsTrue(world.Hero.View.Renderer.flipX);
+            world.Model.EquipWeapon(1); world.Hero.Tick(.02f,input);
+            world.Hero.View.Animation.Update(.05f); Assert.IsTrue(world.Hero.View.Renderer.flipX);
+            input.Movement = Vector2.right; world.Hero.Tick(.02f,input);
+            world.Hero.View.Animation.Update(.05f); Assert.IsFalse(world.Hero.View.Renderer.flipX);
+        }
+        InventorySlotDrag Slot(int index)
+        {
+            foreach (var slot in entry.InventoryView.GetComponentsInChildren<InventorySlotDrag>(true)) if (slot.Index == index) return slot;
+            throw new InvalidOperationException("Slot missing.");
+        }
+        UnityEngine.EventSystems.PointerEventData DragData(InventorySlotDrag source)
+        {
+            return new UnityEngine.EventSystems.PointerEventData(entry.UiManager.UiEventSystem) {
+                button = UnityEngine.EventSystems.PointerEventData.InputButton.Left,
+                position = new Vector2(640,360),pointerDrag = source.gameObject };
+        }
+        [Test] public void UguiDragMovesRealInventoryAndHidesGhost()
+        {
+            entry.UiManager.Bind(world); entry.UiManager.OpenBag();
+            using (var controller = new InventoryController(world.Model,world.Events,entry.InventoryView,world))
+            {
+                entry.InventoryView.Bind(controller);
+                var source = Slot(0); var target = Slot(5); var data = DragData(source);
+                UnityEngine.EventSystems.ExecuteEvents.Execute(source.gameObject,data,UnityEngine.EventSystems.ExecuteEvents.beginDragHandler);
+                Assert.IsTrue(entry.InventoryView.IsDragging); Assert.IsTrue(entry.InventoryView.DragIcon.gameObject.activeSelf);
+                data.position += Vector2.right*80;
+                UnityEngine.EventSystems.ExecuteEvents.Execute(source.gameObject,data,UnityEngine.EventSystems.ExecuteEvents.dragHandler);
+                UnityEngine.EventSystems.ExecuteEvents.Execute(target.gameObject,data,UnityEngine.EventSystems.ExecuteEvents.dropHandler);
+                UnityEngine.EventSystems.ExecuteEvents.Execute(source.gameObject,data,UnityEngine.EventSystems.ExecuteEvents.endDragHandler);
+                Assert.AreEqual(0,world.Model.Inventory[0].amount); Assert.AreEqual(3,world.Model.Inventory[5].amount);
+                Assert.IsFalse(entry.InventoryView.IsDragging); Assert.IsFalse(entry.InventoryView.DragIcon.gameObject.activeSelf);
+                entry.InventoryView.Bind(null);
+            }
+            entry.UiManager.CloseAll(); entry.UiManager.Dispose();
+        }
+        [Test] public void ClosingBagCancelsDragWithoutMovingItems()
+        {
+            entry.UiManager.Bind(world); entry.UiManager.OpenBag();
+            using (var controller = new InventoryController(world.Model,world.Events,entry.InventoryView,world))
+            {
+                entry.InventoryView.Bind(controller); var source = Slot(0);
+                source.OnBeginDrag(DragData(source)); Assert.IsTrue(entry.InventoryView.IsDragging);
+                entry.UiManager.CloseAll(); Assert.IsFalse(entry.InventoryView.IsDragging);
+                Assert.IsFalse(entry.InventoryView.DragIcon.gameObject.activeSelf);
+                Assert.IsFalse(entry.InventoryView.DropOn(0,5)); Assert.AreEqual(3,world.Model.Inventory[0].amount);
+                entry.InventoryView.Bind(null);
+            }
+            entry.UiManager.Dispose();
+        }
+        [Test] public void DroppingOutsideOrChangingDataCancelsDrag()
+        {
+            entry.UiManager.Bind(world); entry.UiManager.OpenBag();
+            using (var controller = new InventoryController(world.Model,world.Events,entry.InventoryView,world))
+            {
+                entry.InventoryView.Bind(controller); var source = Slot(0); var data = DragData(source);
+                source.OnBeginDrag(data); source.OnEndDrag(data);
+                Assert.AreEqual(3,world.Model.Inventory[0].amount); Assert.IsFalse(entry.InventoryView.IsDragging);
+                source.OnBeginDrag(data); world.Model.Collect(ItemId.Mushroom,1);
+                Assert.IsFalse(entry.InventoryView.IsDragging); Assert.IsFalse(entry.InventoryView.DropOn(0,5));
+                Assert.AreEqual(3,world.Model.Inventory[0].amount); entry.InventoryView.Bind(null);
+            }
+            entry.UiManager.CloseAll(); entry.UiManager.Dispose();
+        }
+
+        [Test] public void IdleKeepsLastHeadingWithoutNewAimInput()
+        {
+            input.Movement = Vector2.left; world.Hero.Tick(.02f,input);
+            input.Movement = Vector2.zero; world.Hero.Tick(.02f,input);
+            Assert.Less(world.Hero.Model.FacingX,0); Assert.IsTrue(world.Hero.View.Renderer.flipX);
+        }
     }
 }

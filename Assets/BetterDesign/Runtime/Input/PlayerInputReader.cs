@@ -13,7 +13,9 @@ namespace BetterDesign
         public Camera AimCamera { get { return aimCamera; } }
         public void SetAimCamera(Camera value) { aimCamera = value; }
         Vector2 aimPoint;
-        bool hasAim;
+        bool hasAim,pointerTracked;
+        Vector2 previousPointer;
+        float lastPointerMotion = float.NegativeInfinity;
         public bool HasAim { get { return !blocked && hasAim; } }
         public Vector2 AimPoint { get { return aimPoint; } }
         [Header("Movement")]
@@ -53,10 +55,14 @@ namespace BetterDesign
             bool east = Input.GetKey(right) || (allowArrowKeys && Input.GetKey(KeyCode.RightArrow));
             movement = new Vector2((east ? 1 : 0) - (west ? 1 : 0),(north ? 1 : 0) - (south ? 1 : 0)).normalized;
             bool overUI = uiEventSystem != null && uiEventSystem.IsPointerOverGameObject();
-            hasAim = allowMouseButtons && !overUI && aimCamera != null && aimCamera.pixelRect.Contains(Input.mousePosition);
-            if (hasAim) aimPoint = aimCamera.ScreenToWorldPoint(Input.mousePosition);
             attackPressed = Input.GetKey(attack) || (allowMouseButtons && !overUI && Input.GetMouseButton(0));
             spellPressed = Input.GetKey(spell) || (allowMouseButtons && !overUI && Input.GetMouseButton(1));
+            Vector2 pointer = Input.mousePosition;
+            bool validPointer = allowMouseButtons && !overUI && aimCamera != null && aimCamera.pixelRect.Contains(pointer);
+            if (validPointer && pointerTracked && (pointer-previousPointer).sqrMagnitude > 1) lastPointerMotion = Time.unscaledTime;
+            previousPointer = pointer; pointerTracked = true;
+            hasAim = validPointer && (attackPressed || spellPressed || Time.unscaledTime-lastPointerMotion < .15f);
+            if (hasAim) aimPoint = aimCamera.ScreenToWorldPoint(pointer);
             dashPressed = Input.GetKeyDown(dash);
             SwitchWeaponPressed = Input.GetKeyDown(switchWeapon);
             UpgradeSkillPressed = Input.GetKeyDown(upgradeSkill);
@@ -65,6 +71,10 @@ namespace BetterDesign
             InteractPressed = Input.GetKeyDown(interact); BuyPressed = Input.GetKeyDown(buy);
             HealPressed = Input.GetKeyDown(heal); NextWavePressed = Input.GetKeyDown(nextWave);
         }
-        public void SetGameplayBlocked(bool value) { blocked = value; }
+        public void SetGameplayBlocked(bool value)
+        {
+            blocked = value;
+            if (value) { hasAim = false; pointerTracked = false; lastPointerMotion = float.NegativeInfinity; }
+        }
     }
 }

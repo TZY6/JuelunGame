@@ -80,6 +80,14 @@ namespace BetterDesign.Editor
                     Require(label.font == expectedFont,"Incorrect TMP font on "+label.name);
                 Require(buttons.Count == 22,"Expected 22 authored UI buttons.");
                 Require(entry.InputReader != null && entry.InventoryView != null && entry.InventoryView.IsConfigured,"InputReader / Inventory MVC view missing.");
+                var dragSlots = entry.InventoryView.GetComponentsInChildren<InventorySlotDrag>(true);
+                Require(dragSlots.Length == InventoryModel.Capacity,"Expected 12 authored inventory drag handlers.");
+                var dragIndices = new bool[InventoryModel.Capacity];
+                foreach (var slot in dragSlots)
+                {
+                    Require(slot.View == entry.InventoryView && slot.Index >= 0 && slot.Index < InventoryModel.Capacity && !dragIndices[slot.Index],"Invalid inventory drag binding.");
+                    dragIndices[slot.Index] = true;
+                }
                 var selectedIndices = new bool[InventoryModel.Capacity];
                 foreach (var button in buttons)
                     if (button.onClick.GetPersistentMethodName(0) == "SelectSlot")

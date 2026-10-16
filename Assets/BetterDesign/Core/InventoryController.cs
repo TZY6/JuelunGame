@@ -27,12 +27,20 @@ namespace BetterDesign.Core
         void OnChanged(InventoryChanged change) { Render(); }
         void Render() { view.Render(model.Inventory,selected); }
         public void Select(int index) { if (!disposed && index >= 0 && index < InventoryModel.Capacity) { selected = index; Render(); } }
+        public int Revision { get { return model.Inventory.Revision; } }
+        public bool MoveSlot(int from,int to)
+        {
+            if (disposed || from < 0 || from >= InventoryModel.Capacity || to < 0 || to >= InventoryModel.Capacity) return false;
+            int previous = selected; selected = to;
+            if (model.MoveItem(from,to)) return true;
+            selected = previous; return false;
+        }
         public void UseSelected() { if (!disposed) actions.UseSlot(selected); }
         public void DropSelected() { if (!disposed) actions.DropSlot(selected); }
         public void SellMaterials() { if (!disposed) actions.SellMaterials(); }
         public void SetVisible(bool visible)
         {
-            if (disposed) return;
+            if (disposed || (visible && subscription != null)) return;
             if (subscription != null) { subscription.Dispose(); subscription = null; }
             if (!visible) return;
             subscription = events.InventoryChanged.Subscribe(OnChanged); Render();

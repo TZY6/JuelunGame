@@ -11,6 +11,7 @@ namespace BetterDesign
     public sealed class DemoHud : MonoBehaviour, IDisposable
     {
         DemoWorld world;
+        InventoryView inventoryPanel;
         [SerializeField] EventSystem uiEventSystem;
         public EventSystem UiEventSystem { get { return uiEventSystem; } }
         IDisposable modelSubscription, noticeSubscription, combatSubscription;
@@ -36,6 +37,7 @@ namespace BetterDesign
             Dispose();
             if (!IsConfigured) throw new InvalidOperationException("UIManager scene references missing.");
             this.world = world;
+            inventoryPanel = bag.GetComponent<InventoryView>();
             stack.Clear(); bag.SetActive(false); pause.SetActive(false); modalLayer.SetActive(false);
             modelSubscription = world.Events.Model.Subscribe(OnModel);
             noticeSubscription = world.Events.Notice.Subscribe(OnNotice);
@@ -94,6 +96,7 @@ namespace BetterDesign
         void SyncPause()
         {
             modalLayer.SetActive(stack.IsOpen);
+            if (inventoryPanel != null) { if (bag.activeInHierarchy) inventoryPanel.Open(); else inventoryPanel.Close(); }
             if (uiEventSystem != null) uiEventSystem.SetSelectedGameObject(null);
             if (world != null && world.Paused != stack.IsOpen) world.TogglePause();
         }

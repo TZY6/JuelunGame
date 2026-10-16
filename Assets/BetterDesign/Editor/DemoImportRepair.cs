@@ -25,6 +25,7 @@ namespace BetterDesign.Editor
             repaired |= Check("Runtime/Presentation/LootView.cs",typeof(LootView));
             repaired |= Check("Runtime/UI/SceneFontFallback.cs",typeof(SceneFontFallback));
             repaired |= Check("Runtime/UI/DemoHud.cs",typeof(DemoHud));
+            repaired |= Check("Runtime/UI/InventorySlotDrag.cs",typeof(InventorySlotDrag));
             repaired |= Check("Runtime/UI/InventoryView.cs",typeof(InventoryView));
             if (repaired) AssetDatabase.ImportAsset("Assets/BetterDesign/Configuration/Sanctuary.asset",ImportAssetOptions.ForceUpdate|ImportAssetOptions.ForceSynchronousImport);
         }

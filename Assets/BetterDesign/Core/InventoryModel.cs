@@ -63,6 +63,21 @@ namespace BetterDesign.Core
             if (slots[index].amount == 0) slots[index].item = ItemId.None;
             Revision++; return true;
         }
+        public bool TryMove(int from,int to)
+        {
+            if (from < 0 || from >= Capacity || to < 0 || to >= Capacity || from == to || slots[from].amount == 0) return false;
+            var source = slots[from]; var target = slots[to];
+            if (source.item == target.item)
+            {
+                int moved = Math.Min(source.amount,ItemCatalog.StackLimit(source.item)-target.amount);
+                if (moved <= 0) return false;
+                target.amount += moved; source.amount -= moved;
+                if (source.amount == 0) source.item = ItemId.None;
+                slots[from] = source; slots[to] = target;
+            }
+            else { slots[from] = target; slots[to] = source; }
+            Revision++; return true;
+        }
         public ItemStack[] Capture() { return (ItemStack[])slots.Clone(); }
         public static bool IsValid(ItemStack[] data)
         {
